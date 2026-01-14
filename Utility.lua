@@ -1859,8 +1859,20 @@ function CEPGP_isNumber(num)
 end
 
 function CEPGP_isML()
-	local _, isML = GetLootMethod();
-	return isML;
+	local method, mlPartyID, mlRaidID = GetLootMethod();
+	if method ~= "master" then
+		return 1;
+	end
+	if mlPartyID == 0 or mlRaidID == 0 then
+		return 0;
+	end
+	if mlRaidID ~= nil then
+		return mlRaidID;
+	end
+	if mlPartyID ~= nil then
+		return mlPartyID;
+	end
+	return 1;
 end
 
 function CEPGP_tSort(_t, index, inverse)

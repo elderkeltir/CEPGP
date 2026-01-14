@@ -35,6 +35,47 @@ if not GetNumAddOns then
 	end
 end
 
+if not GetLootMethod then
+	if C_PartyInfo and C_PartyInfo.GetLootMethod then
+		function GetLootMethod()
+			local method, masterLooterPartyID, masterLooterRaidID = C_PartyInfo.GetLootMethod()
+			if type(method) == "number" then
+				local enum = Enum and Enum.PartyLootMethod
+				if (enum and method == enum.Master) or method == 2 then
+					method = "master"
+				end
+				if (enum and method == enum.FreeForAll) or method == 0 then
+					method = "freeforall"
+				end
+				if (enum and method == enum.RoundRobin) or method == 1 then
+					method = "roundrobin"
+				end
+				if (enum and method == enum.Group) or method == 3 then
+					method = "group"
+				end
+				if (enum and method == enum.NeedBeforeGreed) or method == 4 then
+					method = "needbeforegreed"
+				end
+				if (enum and method == enum.Personal) or method == 5 then
+					method = "personalloot"
+				end
+			end
+			return method, masterLooterPartyID, masterLooterRaidID
+		end
+	elseif C_LootHistory and C_LootHistory.GetLootMethod then
+		function GetLootMethod()
+			local method, masterLooterPartyID, masterLooterRaidID = C_LootHistory.GetLootMethod()
+			if type(method) == "number" then
+				local enum = Enum and Enum.PartyLootMethod
+				if (enum and method == enum.Master) or method == 2 then
+					method = "master"
+				end
+			end
+			return method, masterLooterPartyID, masterLooterRaidID
+		end
+	end
+end
+
 if not InterfaceOptions_AddCategory then
 	if Settings and Settings.RegisterCanvasLayoutCategory and Settings.RegisterAddOnCategory then
 		function InterfaceOptions_AddCategory(frame)
