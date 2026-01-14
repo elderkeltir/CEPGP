@@ -27,6 +27,14 @@ if not GetAddOnInfo then
 	end
 end
 
+if not GetNumAddOns then
+	if C_AddOns and C_AddOns.GetNumAddOns then
+		function GetNumAddOns()
+			return C_AddOns.GetNumAddOns()
+		end
+	end
+end
+
 if not InterfaceOptions_AddCategory then
 	if Settings and Settings.RegisterCanvasLayoutCategory and Settings.RegisterAddOnCategory then
 		function InterfaceOptions_AddCategory(frame)
