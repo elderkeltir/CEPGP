@@ -104,7 +104,7 @@ end
 				end
 			end
 		end
-		DEFAULT_CHAT_FRAME:AddMessage("|c00FFC100Classic EPGP Version: " .. CEPGP_Info.Version.Number .. " " .. CEPGP_Info.Version.Build .. " Loaded|r");
+		DEFAULT_CHAT_FRAME:AddMessage("|c00FFC100Classic EPGP <Obsidian> Version: " .. CEPGP_Info.Version.Number .. " " .. CEPGP_Info.Version.Build .. " Loaded|r");
 		if CEPGP.ChangelogVersion ~= CEPGP_Info.Version.Number then
 			CEPGP_print("A new version has been installed.");
 			CEPGP.ChangelogVersion = CEPGP_Info.Version.Number;
