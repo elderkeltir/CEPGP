@@ -17,6 +17,7 @@ The addon is entirely GUI based and the frame is designed to only appear automat
 |	/cep version			|	Queries all guild and raid members for their addon version	|
 |	/cep config				|	Opens the CEPGP options window								|
 |	/cep traffic			|	Opens the CEPGP traffic window								|
+|	/cep changelog			|	Shows the latest CEPGP changelog							|
 
 **Note: cepgp is a context sensitive addon and elements will be visible when they are relevent**
 

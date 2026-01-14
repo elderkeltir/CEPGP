@@ -18,7 +18,6 @@ function CEPGP_handleComms(event, arg1, arg2, response, lootGUID)
 			if (lootGUID ~= CEPGP_Info.Loot.GUID and lootGUID ~= "") and not arg1 then return; end
 			local roll = 0;
 			local name = arg2;
-            name = CEPGP_NormalizeName(name); --NEW
 			
 			local function checkRoll(name)
 				for k, v in pairs(CEPGP_Info.Loot.ItemsTable) do
@@ -86,7 +85,7 @@ function CEPGP_handleComms(event, arg1, arg2, response, lootGUID)
 					elseif not CEPGP.Loot.SuppressResponses then
 						local total = GetNumGroupMembers();
 						for i = 1, total do
-							if name == CEPGP_NormalizeName(GetRaidRosterInfo(i)) then
+							if name == GetRaidRosterInfo(i) then
 								_, _, _, _, class = GetRaidRosterInfo(i);
 							end
 						end
@@ -216,7 +215,7 @@ function CEPGP_handleComms(event, arg1, arg2, response, lootGUID)
 end
 
 function CEPGP_handleCombat(name)
-	if (((C_PartyInfo.GetLootMethod() == 2 and CEPGP_isML() == 0) or (C_PartyInfo.GetLootMethod() == 3 and UnitIsGroupLeader("player"))) and CEPGP_ntgetn(CEPGP_Info.Guild.Roster) > 0) or CEPGP_Info.Debug then
+	if (((GetLootMethod() == "master" and CEPGP_isML() == 0) or (GetLootMethod() == "group" and UnitIsGroupLeader("player"))) and CEPGP_ntgetn(CEPGP_Info.Guild.Roster) > 0) or CEPGP_Info.Debug then
 		local localName = L[name];
 		local EP = CEPGP.EP.BossEP[name];
 		local plurals = name == "The Four Horsemen" or name == "The Silithid Royalty" or name == "The Twin Emperors";
@@ -359,27 +358,27 @@ function CEPGP_handleLoot(event, arg1, arg2)
 							if response then
 								if response == "Highest Roll (Free)" then
 									SendChatMessage("Awarded " .. itemName .. " to ".. player .. " for free (Highest Roll)", CEPGP.Channel, CEPGP_Info.Language);
-									CEPGP_addTraffic(player, CEPGP_Info.NormalizedPlayerName, response, EP, EP, GP, GP, id, tStamp);
+									CEPGP_addTraffic(player, UnitName("player"), response, EP, EP, GP, GP, id, tStamp);
 								else
 									SendChatMessage("Awarded " .. itemName .. " to ".. player .. " for free", CEPGP.Channel, CEPGP_Info.Language);
-									CEPGP_addTraffic(player, CEPGP_Info.NormalizedPlayerName, "Given for Free", EP, EP, GP, GP, id, tStamp);
+									CEPGP_addTraffic(player, UnitName("player"), "Given for Free", EP, EP, GP, GP, id, tStamp);
 								end
 							else
 								SendChatMessage("Awarded " .. itemName .. " to ".. player .. " for free", CEPGP.Channel, CEPGP_Info.Language);
-								CEPGP_addTraffic(player, CEPGP_Info.NormalizedPlayerName, "Given for Free", EP, EP, GP, GP, id, tStamp);
+								CEPGP_addTraffic(player, UnitName("player"), "Given for Free", EP, EP, GP, GP, id, tStamp);
 							end
 						else
 							local index = CEPGP_getIndex(player);
 							if index then
 								SendChatMessage("Awarded " .. itemName .. " to ".. player .. " for free (Exclusion List)", CEPGP.Channel, CEPGP_Info.Language);
-								CEPGP_addTraffic(player, CEPGP_Info.NormalizedPlayerName, "Given for Free (Exclusion List)", nil, nil, nil, nil, id, tStamp);
+								CEPGP_addTraffic(player, UnitName("player"), "Given for Free (Exclusion List)", nil, nil, nil, nil, id, tStamp);
 							end
 						end
 					end
 					
 				else
 					SendChatMessage(itemName .. " has been distributed without EPGP", CEPGP.Channel, CEPGP_Info.Language);
-					CEPGP_addTraffic(player, CEPGP_Info.NormalizedPlayerName, "Manually Awarded", "", "", "", "", id, tStamp);
+					CEPGP_addTraffic(player, UnitName("player"), "Manually Awarded", "", "", "", "", id, tStamp);
 				end
 			end;
 			--[[if CEPGP_ntgetn(CEPGP_Info.Guild.Roster) < GetNumGuildMembers() and CEPGP_Info.Guild.Polling then

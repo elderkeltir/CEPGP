@@ -5,11 +5,17 @@
 		<Size>
 			<AbsDimension x="30" y="20" />
 		</Size>
-		<!-- <ButtonText style="$parentText"/> -->
-		<NormalFont style="GameFontNormal"/>
-		<HighlightFont style="GameFontHighlight"/>
-		<DisabledFont style="GameFontDisable"/>
+		<ButtonText name="$parentText"/>
+		<NormalFont>GameFontNormal</NormalFont>
+		<HighlightFont>GameFontHighlight</HighlightFont>
+		<DisabledFont>GameFontDisable</DisabledFont>
 	</Button>
+	
+	<CheckButton name="UIOptionsCheckButtonTemplate" virtual="true" inherits="InterfaceOptionsCheckButtonTemplate">
+		<Size>
+			<AbsDimension x="25" y="25" />
+		</Size>
+	</CheckButton>
 	
 	<Frame name="CEPGPFrameTemplate" virtual="true" enableMouse="true" toplevel="true" hidden="true">
 		<Size>
@@ -135,7 +141,7 @@
 					<Anchors>
 						<Anchor point="LEFT" relativePoint="LEFT" relativeTo="$parentInfo">
 							<Offset>
-								<AbsDimension x="162.5" y="0"/>
+								<AbsDimension x="82.5" y="0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -144,7 +150,7 @@
 					<Anchors>
 						<Anchor point="LEFT" relativePoint="LEFT" relativeTo="$parentClass">
 							<Offset>
-								<AbsDimension x="60" y="0"/>
+								<AbsDimension x="90" y="0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -153,7 +159,7 @@
 					<Anchors>
 						<Anchor point="LEFT" relativePoint="LEFT" relativeTo="$parentRank">
 							<Offset>
-								<AbsDimension x="92" y="0"/>
+								<AbsDimension x="105" y="0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -171,7 +177,7 @@
 					<Anchors>
 						<Anchor point="RIGHT" relativePoint="LEFT" relativeTo="$parentEP">
 							<Offset>
-								<AbsDimension x="70" y="0"/>
+								<AbsDimension x="100" y="0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -180,7 +186,7 @@
 					<Anchors>
 						<Anchor point="RIGHT" relativePoint="RIGHT" relativeTo="$parentGP">
 							<Offset>
-								<AbsDimension x="67" y="0"/>
+								<AbsDimension x="65" y="0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -189,7 +195,7 @@
 					<Anchors>
 						<Anchor point="RIGHT" relativePoint="RIGHT" relativeTo="$parentPR">
 							<Offset>
-								<AbsDimension x="63" y="0"/>
+								<AbsDimension x="65" y="0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -221,7 +227,7 @@
 			<Attribute name="GUID" type="string" value="" />
 		</Attributes>
 		<Frames>
-			<CheckButton name="$parentCheck" inherits="UICheckButtonTemplate">
+			<CheckButton name="$parentCheck" inherits="UIOptionsCheckButtonTemplate">
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -257,7 +263,7 @@
 			</OnShow>
 		</Scripts>
 	</Button>
-	<CheckButton name="ImportOptionCheckTemplate" inherits="UICheckButtonTemplate" virtual="true">
+	<CheckButton name="ImportOptionCheckTemplate" inherits="UIOptionsCheckButtonTemplate" virtual="true">
 		<Size x="21" y="21" />
 		<Layers>
 			<Layer level="OVERLAY">
@@ -296,7 +302,7 @@
 					<Anchors>
 						<Anchor point="LEFT" relativePoint="LEFT" relativeTo="$parentInfo">
 							<Offset>
-								<AbsDimension x="195" y="0"/>
+								<AbsDimension x="115" y="0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -305,7 +311,7 @@
 					<Anchors>
 						<Anchor point="LEFT" relativePoint="LEFT" relativeTo="$parentClass">
 							<Offset>
-								<AbsDimension x="82.5" y="0"/>
+								<AbsDimension x="122.5" y="0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -323,7 +329,7 @@
 					<Anchors>
 						<Anchor point="RIGHT" relativePoint="LEFT" relativeTo="$parentEP">
 							<Offset>
-								<AbsDimension x="67.5" y="0"/>
+								<AbsDimension x="127.5" y="0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -332,7 +338,7 @@
 					<Anchors>
 						<Anchor point="RIGHT" relativePoint="RIGHT" relativeTo="$parentGP">
 							<Offset>
-								<AbsDimension x="60" y="0"/>
+								<AbsDimension x="70" y="0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -374,7 +380,7 @@
 					<Anchors>
 						<Anchor point="LEFT" relativePoint="LEFT" relativeTo="$parentInfo">
 							<Offset>
-								<AbsDimension x="195" y="0"/>
+								<AbsDimension x="115" y="0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -383,7 +389,7 @@
 					<Anchors>
 						<Anchor point="LEFT" relativePoint="LEFT" relativeTo="$parentClass">
 							<Offset>
-								<AbsDimension x="82.5" y="0"/>
+								<AbsDimension x="122.5" y="0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -401,7 +407,7 @@
 					<Anchors>
 						<Anchor point="RIGHT" relativePoint="LEFT" relativeTo="$parentEP">
 							<Offset>
-								<AbsDimension x="67.5" y="0"/>
+								<AbsDimension x="127.5" y="0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -410,7 +416,7 @@
 					<Anchors>
 						<Anchor point="RIGHT" relativePoint="RIGHT" relativeTo="$parentGP">
 							<Offset>
-								<AbsDimension x="60" y="0"/>
+								<AbsDimension x="70" y="0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -548,7 +554,7 @@
 	</Button>
 	<Button name="trafficButtonTemplate" virtual="true">
 		<Size>
-			<AbsDimension x="1060" y="15"/>
+			<AbsDimension x="860" y="15"/>
 		</Size>
 		<Layers>
 			<Layer level="BORDER">
@@ -895,7 +901,7 @@
 			<AbsDimension x="200" y="30"/>
 		</Size>
 		<Frames>
-			<CheckButton name="$parentEnabled" inherits="UICheckButtonTemplate">
+			<CheckButton name="$parentEnabled" inherits="UIOptionsCheckButtonTemplate">
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -1043,7 +1049,6 @@
 		</Scripts>
 	</EditBox>
 	
-	<!-- <EditBox name="slotWeightInputBoxTemplate" inherits="InputBoxTemplate" minvalue="0.0" virtual="true"> -->
 	<EditBox name="slotWeightInputBoxTemplate" inherits="InputBoxTemplate" virtual="true">
 		<Size>
 			<AbsDimension x="50" y="5" />
@@ -1127,7 +1132,7 @@
 		</Scripts>
 	</EditBox>
 	
-	<CheckButton name="AutoAwardEPCheckBox" inherits="UICheckButtonTemplate" virtual="true">
+	<CheckButton name="AutoAwardEPCheckBox" inherits="UIOptionsCheckButtonTemplate" virtual="true">
 		<HitRectInsets>
 			<AbsInset left="0" right="0" top="0" bottom="0" />
 		</HitRectInsets>
@@ -1156,7 +1161,7 @@
 		</Scripts>
 	</CheckButton>
 
-	<CheckButton name="StandbyEPRankCheckBox" inherits="UICheckButtonTemplate" virtual="true">
+	<CheckButton name="StandbyEPRankCheckBox" inherits="UIOptionsCheckButtonTemplate" virtual="true">
 		<HitRectInsets>
 			<AbsInset left="0" right="0" top="0" bottom="0" />
 		</HitRectInsets>
@@ -1180,7 +1185,7 @@
 		</Scripts>
 	</CheckButton>
 	
-	<CheckButton name="CEPGPRaidAssistCheckTemplate" inherits="UICheckButtonTemplate" virtual="true">
+	<CheckButton name="CEPGPRaidAssistCheckTemplate" inherits="UIOptionsCheckButtonTemplate" virtual="true">
 		<HitRectInsets>
 			<AbsInset left="0" right="0" top="0" bottom="0" />
 		</HitRectInsets>
@@ -1223,7 +1228,7 @@
 		</Scripts>
 	</CheckButton>
 	
-	<CheckButton name="CEPGPSyncRankCheckTemplate" inherits="UICheckButtonTemplate" virtual="true">
+	<CheckButton name="CEPGPSyncRankCheckTemplate" inherits="UIOptionsCheckButtonTemplate" virtual="true">
 		<HitRectInsets>
 			<AbsInset left="0" right="0" top="0" bottom="0" />
 		</HitRectInsets>
@@ -1309,7 +1314,7 @@
 			<Attribute name="itemGUID" type="string" value=""/>
 		</Attributes>
 		<Frames>
-			<CheckButton name="$parent_check" inherits="UICheckButtonTemplate">
+			<CheckButton name="$parent_check" inherits="UIOptionsCheckButtonTemplate">
 				<Size x="15" y="15" />
 				<Anchors>
 					<Anchor point="LEFT" />
@@ -1351,7 +1356,9 @@
 			</Button>
 			<Button name="$parent_name">
 				<Size x="1" y="15" />
-				<!-- <Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parent_icon" x="5" /> -->
+				<Anchors>
+					<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parent_icon" x="5" />
+				</Anchors>
 				<Layers>
 					<Layer level="OVERLAY">
 						<FontString name="$parent_text" inherits="GameFontNormalSmall">

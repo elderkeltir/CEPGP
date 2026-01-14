@@ -4,12 +4,9 @@ function CEPGP_UpdateLootScrollBar(PRsort, sort)
 	CEPGP_Info.LastRun.DistSB = GetTime();
 	local call = CEPGP_Info.LastRun.DistSB;
 	local quit = false;
-
 	for name, _ in pairs(CEPGP_Info.Loot.ItemsTable) do
-        name = CEPGP_NormalizeName(name) --NEW
 		local roll = math.ceil(math.random(0, 100));
 		local EP, GP;
-
 		if CEPGP_Info.Guild.Roster[name] then
 			local index = CEPGP_getIndex(name);
 			EP, GP = CEPGP_getEPGP(name, index);
@@ -33,7 +30,7 @@ function CEPGP_UpdateLootScrollBar(PRsort, sort)
 			EP = 0;
 			GP = CEPGP.GP.Min;
 			for i = 1, GetNumGroupMembers() do
-				if CEPGP_NormalizeName(GetRaidRosterInfo(i)) == name then
+				if GetRaidRosterInfo(i) == name then
 					local class = select(5, GetRaidRosterInfo(i))
 					local rank = "Not in Guild";
 					local rankIndex = 11;
@@ -56,18 +53,11 @@ function CEPGP_UpdateLootScrollBar(PRsort, sort)
 			end
 		end
 		count = count + 1;
-
+		
 	end
 	if PRsort and CEPGP.Loot.AutoSort then
-		-- Priority-based sorting enforced by AutoSort (PR sorting)
 		tempTable = CEPGP_sortDistList(tempTable);
-	elseif PRsort and not CEPGP.Loot.AutoSort then
-		-- Caller requested a refresh with PRsort=true but AutoSort is disabled.
-		-- In that case we should still apply the user's chosen Loot sorting criteria
-		-- instead of leaving the table in the unpredictable pairs() order.
-		tempTable = CEPGP_tSort(tempTable, CEPGP_Info.Sorting.Loot[1], CEPGP_Info.Sorting.Loot[2]);
 	elseif sort then
-		-- Explicit request to sort using current criteria
 		tempTable = CEPGP_tSort(tempTable, CEPGP_Info.Sorting.Loot[1], CEPGP_Info.Sorting.Loot[2]);
 	end
 	local kids = {_G["CEPGP_dist_scrollframe_container"]:GetChildren()};
@@ -270,60 +260,58 @@ function CEPGP_UpdateGuildScrollBar()
 		--child:Hide();
 	end
 	local i = 1;
-	if #tempTable > 0 then
-		C_Timer.NewTicker(0.0001, function()
-			if CEPGP_Info.LastRun.GuildSB ~= call then
-				quit = true;
-				return;
-			end
-			local EPcolour, EP, GP, PR;
-			EP = (tempTable[i][5] == -1 and "Excluded" or tempTable[i][5]);
-			GP = (tempTable[i][6] == -1 and "Excluded" or tempTable[i][6]);
-			PR = (tempTable[i][7] == -1 and "Excluded" or tempTable[i][7]);
-			if #tempTable > 0 then
-				local frame;
-				if not _G["GuildButton" .. i] then
-					frame = CreateFrame('Button', "GuildButton" .. i, _G["CEPGP_guild_scrollframe_container"], "GuildButtonTemplate");
-					if i > 1 then
-						_G["GuildButton" .. i]:SetPoint("TOPLEFT", _G["GuildButton" .. i-1], "BOTTOMLEFT", 0, -2);
-					else
-						_G["GuildButton" .. i]:SetPoint("TOPLEFT", _G["CEPGP_guild_scrollframe_container"], "TOPLEFT", 0, -10);
-					end
+	C_Timer.NewTicker(0.0001, function()
+		if CEPGP_Info.LastRun.GuildSB ~= call then
+			quit = true;
+			return;
+		end
+		local EPcolour, EP, GP, PR;
+		EP = (tempTable[i][5] == -1 and "Excluded" or tempTable[i][5]);
+		GP = (tempTable[i][6] == -1 and "Excluded" or tempTable[i][6]);
+		PR = (tempTable[i][7] == -1 and "Excluded" or tempTable[i][7]);
+		if #tempTable > 0 then
+			local frame;
+			if not _G["GuildButton" .. i] then
+				frame = CreateFrame('Button', "GuildButton" .. i, _G["CEPGP_guild_scrollframe_container"], "GuildButtonTemplate");
+				if i > 1 then
+					_G["GuildButton" .. i]:SetPoint("TOPLEFT", _G["GuildButton" .. i-1], "BOTTOMLEFT", 0, -2);
 				else
-					frame = _G["GuildButton" .. i];
+					_G["GuildButton" .. i]:SetPoint("TOPLEFT", _G["CEPGP_guild_scrollframe_container"], "TOPLEFT", 0, -10);
 				end
-				local colour = CEPGP_Info.ClassColours[string.upper(tempTable[i][8])];
-				if not colour then
-					colour = {
-					r = 1,
-					g = 1,
-					b = 1
-				};
-				end
-				frame:SetAttribute("excluded", (tempTable[i][9] and true or false));
-				_G["GuildButton" .. i]:Show();
-				_G["GuildButton" .. i .. "Info"]:SetText(tempTable[i][1]);
-				_G["GuildButton" .. i .. "Info"]:SetTextColor(colour.r, colour.g, colour.b);
-				_G["GuildButton" .. i .. "Class"]:SetText(tempTable[i][2]);
-				_G["GuildButton" .. i .. "Class"]:SetTextColor(colour.r, colour.g, colour.b);
-				_G["GuildButton" .. i .. "Rank"]:SetText(tempTable[i][3]);
-				_G["GuildButton" .. i .. "Rank"]:SetTextColor(colour.r, colour.g, colour.b);
-				_G["GuildButton" .. i .. "EP"]:SetText(EP);
-				_G["GuildButton" .. i .. "GP"]:SetText(GP);
-				_G["GuildButton" .. i .. "PR"]:SetText(PR);
-				if tempTable[i][9] then
-					_G["GuildButton" .. i .. "EP"]:SetTextColor(1, 0, 0);
-					_G["GuildButton" .. i .. "GP"]:SetTextColor(1, 0, 0);
-					_G["GuildButton" .. i .. "PR"]:SetTextColor(1, 0, 0);
-				else
-					_G["GuildButton" .. i .. "EP"]:SetTextColor(colour.r, colour.g, colour.b);
-					_G["GuildButton" .. i .. "GP"]:SetTextColor(colour.r, colour.g, colour.b);
-					_G["GuildButton" .. i .. "PR"]:SetTextColor(colour.r, colour.g, colour.b);
-				end
+			else
+				frame = _G["GuildButton" .. i];
 			end
-			i = i + 1;
-		end, #tempTable);
-	end
+			local colour = CEPGP_Info.ClassColours[string.upper(tempTable[i][8])];
+			if not colour then
+				colour = {
+				r = 1,
+				g = 1,
+				b = 1
+			};
+			end
+			frame:SetAttribute("excluded", (tempTable[i][9] and true or false));
+			_G["GuildButton" .. i]:Show();
+			_G["GuildButton" .. i .. "Info"]:SetText(tempTable[i][1]);
+			_G["GuildButton" .. i .. "Info"]:SetTextColor(colour.r, colour.g, colour.b);
+			_G["GuildButton" .. i .. "Class"]:SetText(tempTable[i][2]);
+			_G["GuildButton" .. i .. "Class"]:SetTextColor(colour.r, colour.g, colour.b);
+			_G["GuildButton" .. i .. "Rank"]:SetText(tempTable[i][3]);
+			_G["GuildButton" .. i .. "Rank"]:SetTextColor(colour.r, colour.g, colour.b);
+			_G["GuildButton" .. i .. "EP"]:SetText(EP);
+			_G["GuildButton" .. i .. "GP"]:SetText(GP);
+			_G["GuildButton" .. i .. "PR"]:SetText(PR);
+			if tempTable[i][9] then
+				_G["GuildButton" .. i .. "EP"]:SetTextColor(1, 0, 0);
+				_G["GuildButton" .. i .. "GP"]:SetTextColor(1, 0, 0);
+				_G["GuildButton" .. i .. "PR"]:SetTextColor(1, 0, 0);
+			else
+				_G["GuildButton" .. i .. "EP"]:SetTextColor(colour.r, colour.g, colour.b);
+				_G["GuildButton" .. i .. "GP"]:SetTextColor(colour.r, colour.g, colour.b);
+				_G["GuildButton" .. i .. "PR"]:SetTextColor(colour.r, colour.g, colour.b);
+			end
+		end
+		i = i + 1;
+	end, #tempTable);
 end
 
 function CEPGP_UpdateRaidScrollBar()
@@ -499,7 +487,7 @@ function CEPGP_UpdateVersionScrollBar()
 			_G["versionButton" .. i .. "version"]:SetTextColor(colour.r, colour.g, colour.b);
 		else
 			for x = 1, GetNumGroupMembers() do
-				if tempTable[i][1] == CEPGP_NormalizeName(GetRaidRosterInfo(x)) then
+				if tempTable[i][1] == GetRaidRosterInfo(x) then
 					name = tempTable[i][1];
 					version = tempTable[i][2];
 					class = tempTable[i][3];
@@ -735,8 +723,6 @@ function CEPGP_UpdateTrafficScrollBar()
 			elseif results[i][10] and results[i][11] then
 				_G["TrafficButton" .. i .. "Share"]:Show();				
 			end
-            _G["TrafficButton" .. i .. "Issuer"]:SetPoint("RIGHT", "TrafficButton" .. i, "LEFT", 340, 0)
-            _G["TrafficButton" .. i .. "Action"]:SetPoint("RIGHT", "TrafficButton" .. i .. "Name", "LEFT", 705, 0)
 			i = i - 1;
 		end, #results);
 	end
@@ -773,11 +759,12 @@ function CEPGP_UpdateStandbyScrollBar()
 			
 			frame:SetWidth(width);
 			frameName:SetPoint("LEFT", frame, "LEFT");
-			frameClass:SetPoint("LEFT", frameName, "LEFT", width/3.07, 0);
-			frameRank:SetPoint("LEFT", frameClass, "LEFT", width/5.43, 0);
-			frameEP:SetPoint("LEFT", frameRank, "LEFT", width/5.43, 0);
-			frameGP:SetPoint("LEFT", frameEP, "LEFT", width/10.46, 0);
-			framePR:SetPoint("LEFT", frameGP, "LEFT", width/10.46, 0);
+			frameClass:SetPoint("LEFT", frameName, "LEFT", width/6, 0);
+			frameRank:SetPoint("LEFT", frameClass, "LEFT", width/5, 0);
+			frameEP:SetPoint("LEFT", frameRank, "LEFT", width/5, 0);
+			frameGP:SetPoint("LEFT", frameEP, "LEFT", width/7, 0);
+			framePR:SetPoint("LEFT", frameGP, "LEFT", width/7, 0);
+			
 		end
 		local _, _, rank, rankIndex, oNote, _, classFile = CEPGP_getGuildInfo(CEPGP.Standby.Roster[i][1]);
 		local online = true;

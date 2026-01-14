@@ -66,7 +66,7 @@ end
 
 function CEPGP_announce(link, x, slotNum, quantity)
 
-	if (C_PartyInfo.GetLootMethod() == 2 and CEPGP_isML() == 0) or CEPGP_Info.Debug then
+	if (GetLootMethod() == "master" and CEPGP_isML() == 0) or CEPGP_Info.Debug then
 		local iString = CEPGP_getItemString(link);
 		local name, _, _, _, _, _, _, _, slot, tex = GetItemInfo(iString);
 		local id = CEPGP_getItemID(iString);
@@ -115,14 +115,11 @@ function CEPGP_announce(link, x, slotNum, quantity)
 		CEPGP_toggleGPEdit(false);
 		CEPGP_Info.Loot.ItemsTable = {};
 		CEPGP_Info.Loot.DistributionID = id;
-		CEPGP_Info.Loot.Master = CEPGP_Info.NormalizedPlayerName;
+		CEPGP_Info.Loot.Master = UnitName("player");
 		CEPGP_addAddonMsg("CEPGP_setDistID;" .. id, "RAID");
 		CEPGP_addAddonMsg("CEPGP_setLootGUID;" .. CEPGP_Info.Loot.GUID, "RAID");
 		CEPGP_Info.Loot.DistEquipSlot = slot;
-        local buttonMode = _G[CEPGP_Info.Mode..'itemGP'..x];
-        local buttonLoot = _G['lootitemGP'..x];
-        local buttonGP = buttonMode or buttonLoot;
-		gp = buttonGP:GetText();
+		gp = _G[CEPGP_Info.Mode..'itemGP'..x]:GetText();
 		CEPGP_Info.Loot.SlotNum = slotNum;
 		CEPGP_UpdateLootScrollBar();		
 		_G["CEPGP_respond_texture"]:SetTexture(tex);
@@ -138,7 +135,7 @@ function CEPGP_announce(link, x, slotNum, quantity)
 		_G["CEPGP_respond_item_name"]:SetText(link);
 		local rank = 0;
 		for i = 1, GetNumGroupMembers() do
-			if CEPGP_Info.NormalizedPlayerName == CEPGP_NormalizeName(GetRaidRosterInfo(i)) then
+			if UnitName("player") == GetRaidRosterInfo(i) then
 				_, rank = GetRaidRosterInfo(i);
 			end
 		end
@@ -259,10 +256,10 @@ function CEPGP_announce(link, x, slotNum, quantity)
 		_G["CEPGP_distribute_item_texture"]:SetTexture(tex);
 		_G["CEPGP_distribute_item_tex"]:SetScript('OnLeave', function() GameTooltip:Hide() end);
 		_G["CEPGP_distribute_GP_value"]:SetText(gp);
-	elseif C_PartyInfo.GetLootMethod() == 2 then
+	elseif GetLootMethod() == "master" then
 		CEPGP_print("You are not the Loot Master.", 1);
 		return;
-	elseif C_PartyInfo.GetLootMethod() ~= 2 then
+	elseif GetLootMethod() ~= "master" then
 		CEPGP_print("The loot method is not Master Looter", 1);
 	end
 end

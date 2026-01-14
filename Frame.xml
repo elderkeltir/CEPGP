@@ -77,7 +77,8 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						Settings.OpenToCategory(CEPGP_Info.category.ID);
+						InterfaceOptionsFrame_Show();
+						InterfaceOptionsFrame_OpenToCategory("Classic EPGP");
 					</OnClick>
 				</Scripts>
 			</Button>
@@ -276,7 +277,7 @@
 						<Anchors>
 							<Anchor point="TOPLEFT" relativePoint="BOTTOMRIGHT" relativeTo="CEPGP_button_guild_traffic">
 								<Offset>
-									<AbsDimension x="75" y="-7" />
+									<AbsDimension x="-5" y="-7" />
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -290,7 +291,7 @@
 						<Anchors>
 							<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="CEPGP_guild_class">
 								<Offset>
-									<AbsDimension x="50" y="0" />
+									<AbsDimension x="90" y="0" />
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -318,7 +319,7 @@
 						<Anchors>
 							<Anchor point="LEFT" relativePoint="RIGHT"  relativeTo="CEPGP_guild_EP">
 								<Offset>
-									<AbsDimension x="30" y="0" />
+									<AbsDimension x="80" y="0" />
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -332,7 +333,7 @@
 						<Anchors>
 							<Anchor point="LEFT" relativePoint="RIGHT"  relativeTo="CEPGP_guild_GP">
 								<Offset>
-									<AbsDimension x="30" y="0" />
+									<AbsDimension x="40" y="0" />
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -586,7 +587,7 @@
 						<Anchors>
 							<Anchor point="TOPLEFT" relativePoint="BOTTOMRIGHT" relativeTo="CEPGP_button_guild_traffic">
 								<Offset>
-									<AbsDimension x="75" y="-7" />
+									<AbsDimension x="-5" y="-7" />
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -603,7 +604,7 @@
 						<Anchors>
 							<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="CEPGP_raid_class">
 								<Offset>
-									<AbsDimension x="50" y="0" />
+									<AbsDimension x="90" y="0" />
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -637,7 +638,7 @@
 						<Anchors>
 							<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="CEPGP_raid_EP">
 								<Offset>
-									<AbsDimension x="30" y="0" />
+									<AbsDimension x="80" y="0" />
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -654,7 +655,7 @@
 						<Anchors>
 							<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="CEPGP_raid_GP">
 								<Offset>
-									<AbsDimension x="30" y="0" />
+									<AbsDimension x="40" y="0" />
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -890,7 +891,7 @@
 						<Anchors>
 							<Anchor point="LEFT" relativePoint="LEFT" relativeTo="CEPGP_distribute_raid_name">
 								<Offset>
-									<AbsDimension x="162.5" y="0" />
+									<AbsDimension x="82.5" y="0" />
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -907,7 +908,7 @@
 						<Anchors>
 							<Anchor point="LEFT" relativePoint="LEFT" relativeTo="CEPGP_distribute_raid_class">
 								<Offset>
-									<AbsDimension x="60" y="0" />
+									<AbsDimension x="90" y="0" />
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -941,7 +942,7 @@
 						<Anchors>
 							<Anchor point="LEFT" relativePoint="LEFT" relativeTo="CEPGP_distribute_raid_response">
 								<Offset>
-									<AbsDimension x="69" y="0" />
+									<AbsDimension x="85" y="0" />
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -958,7 +959,7 @@
 						<Anchors>
 							<Anchor point="RIGHT" relativePoint="RIGHT" relativeTo="CEPGP_distribute_raid_EP">
 								<Offset>
-									<AbsDimension x="65" y="0" />
+									<AbsDimension x="85" y="0" />
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -1120,7 +1121,6 @@
 		</Frames>
 		<Scripts>
 			<OnLoad inherit="prepend">
-			    self:RegisterEvent("PLAYER_ENTERING_WORLD");
 				self:RegisterEvent("LOOT_OPENED");
 				self:RegisterEvent("LOOT_CLOSED");
 				self:RegisterEvent("LOOT_SLOT_CLEARED");
@@ -1304,6 +1304,7 @@
 		<Attributes>
 			<Attribute name="offline" type="boolean" value="false" />
 		</Attributes>
+
 		<Layers>
 			<Layer level="OVERLAY">
 				<FontString name="CEPGP_version_offline" inherits="GameFontNormal" text="Show Offline Players: ">
@@ -1339,7 +1340,7 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<CheckButton name="$parent_offline_check" inherits="UICheckButtonTemplate" checked="false">
+			<CheckButton name="$parent_offline_check" inherits="UIOptionsCheckButtonTemplate" checked="false">
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -1443,7 +1444,7 @@
 						CEPGP_addAddonMsg("version-check", "GUILD");
 						for i = 1, GetNumGuildMembers() do
 							local name, _, _, _, class, _, _, _, online, _, classFileName = GetGuildRosterInfo(i);
-							name = Ambiguate(name, "mail");
+							name = Ambiguate(name, "all");
 							if online then
 								CEPGP_Info.Version.List[name] = CEPGP_Info.Version.List[name] or {
 									[1] = "Addon not enabled",
@@ -1478,7 +1479,6 @@
 						CEPGP_Info.Version.ListSearch = "RAID";
 						for i = 1, GetNumGroupMembers() do
 							local name, _, _, _, class, classFile, _, online = GetRaidRosterInfo(i);
-							name = CEPGP_NormalizeName(name); --NEW
 							if online then
 								CEPGP_Info.Version.List[name] = CEPGP_Info.Version.List[name] or {
 									[1] = "Addon not enabled",
@@ -1740,7 +1740,7 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<CheckButton name="CEPGP_context_popup_EP_check" inherits="UICheckButtonTemplate" checked="1">
+			<CheckButton name="CEPGP_context_popup_EP_check" inherits="UIOptionsCheckButtonTemplate" checked="1">
 				<Anchors>
 					<Anchor point="TOPLEFT">
 						<Offset>
@@ -1762,7 +1762,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_context_popup_GP_check" inherits="UICheckButtonTemplate">
+			<CheckButton name="CEPGP_context_popup_GP_check" inherits="UIOptionsCheckButtonTemplate">
 				<Anchors>
 					<Anchor point="BOTTOM" relativeTo="CEPGP_context_popup_EP_check">
 						<Offset>
@@ -1784,9 +1784,9 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<EditBox name="CEPGP_context_amount" inherits="InputBoxTemplate" letters="50">
+			<EditBox name="CEPGP_context_amount" inherits="InputBoxTemplate" letters="15">
 				<Size>
-					<AbsDimension x="252" y="50" />
+					<AbsDimension x="105" y="20" />
 				</Size>
 				<Anchors>
 					<Anchor point="TOP" relativeTo="CEPGP_context_popup_desc" relativePoint="BOTTOM">
@@ -1940,7 +1940,7 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<CheckButton name="$parent_fixed_check" inherits="UICheckButtonTemplate">
+			<CheckButton name="$parent_fixed_check" inherits="UIOptionsCheckButtonTemplate">
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -1961,7 +1961,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="$parent_percent_check" inherits="UICheckButtonTemplate" checked="1">
+			<CheckButton name="$parent_percent_check" inherits="UIOptionsCheckButtonTemplate" checked="1">
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -1982,7 +1982,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<EditBox name="$parent_amount" inherits="InputBoxTemplate" letters="35">
+			<EditBox name="$parent_amount" inherits="InputBoxTemplate" letters="15">
 				<Size>
 					<AbsDimension x="105" y="20" />
 				</Size>
@@ -2131,7 +2131,7 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<CheckButton name="$parent_standby_check" inherits="UICheckButtonTemplate">
+			<CheckButton name="$parent_standby_check" inherits="UIOptionsCheckButtonTemplate">
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -2147,7 +2147,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<EditBox name="$parent_amount" inherits="InputBoxTemplate" letters="35">
+			<EditBox name="$parent_amount" inherits="InputBoxTemplate" letters="15">
 				<Size>
 					<AbsDimension x="105" y="20" />
 				</Size>
@@ -2411,6 +2411,24 @@
 			</Layer>
 		</Layers>
 		<Frames>
+			<Button name="CEPGP_restoreDropdown" inherits="UIDropDownMenuTemplate">
+				<Anchors>
+					<Anchor point="CENTER" relativePoint="BOTTOM">
+						<Offset>
+							<AbsDimension x="0" y="70" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnShow>
+						UIDropDownMenu_SetWidth(self, 250);
+						UIDropDownMenu_Initialize(self, CEPGP_initRestoreDropdown);
+					</OnShow>
+					<OnLoad>
+						CEPGP_initDropdown(self, CEPGP_initRestoreDropdown);
+					</OnLoad>
+				</Scripts>
+			</Button>
 			<Button name="CEPGP_guild_log_restore_cancel" inherits="GameMenuButtonTemplate" text="Cancel">
 				<Size>
 					<AbsDimension x="75" y="30"/>
@@ -2442,8 +2460,7 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
-						local record = LibDD:UIDropDownMenu_GetSelectedName(CEPGP_restoreDropdown);
+						local record = UIDropDownMenu_GetSelectedName(CEPGP_restoreDropdown);
 						CEPGP.Backups[record] = nil;
 						CEPGP_print("Deleted log: " .. record);
 						CEPGP_initDropdown(self, CEPGP_initRestoreDropdown);
@@ -2466,14 +2483,13 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
-						local name = LibDD:UIDropDownMenu_GetSelectedName(CEPGP_restoreDropdown);
+						local name = UIDropDownMenu_GetSelectedName(CEPGP_restoreDropdown);
 						
 						local function update()
 							--CEPGP_Info.IgnoreUpdates = false;
 							CEPGP_rosterUpdate("GUILD_ROSTER_UPDATE");
 							CEPGP_print("Guild EPGP standings have been restored from record [" .. name .. "]");
-							CEPGP_addTraffic("Guild", CEPGP_Info.NormalizedPlayerName, "Restored EPGP Standings from log [" .. name .. "]");
+							CEPGP_addTraffic("Guild", UnitName("player"), "Restored EPGP Standings from log [" .. name .. "]");
 							if _G["CEPGP_traffic"]:IsVisible() then
 								CEPGP_UpdateTrafficScrollBar();
 							end
@@ -2484,20 +2500,17 @@
 						C_Timer.After(0.1, function()
 							if CEPGP.Backups[name] ~= nil and CEPGP_Info.Backups.ConfirmRestore then
 								local i = 0;
-								if GetNumGuildMembers() > 0 then
-									C_Timer.NewTicker(0.0001, function()
-										i = i + 1;
-										local fullName = GetGuildRosterInfo(i);
-										fullName = CEPGP_NormalizeName(fullName);
-										local player = Ambiguate(fullName, "mail");
-										if CEPGP.Backups[name][fullName] and not CEPGP_Info.Guild.Roster[player][9] then
-											GuildRosterSetOfficerNote(i, CEPGP.Backups[name][fullName]);
-										end
-										if i == GetNumGuildMembers() then
-											update();
-										end
-									end, GetNumGuildMembers());
-								end
+								C_Timer.NewTicker(0.0001, function()
+									i = i + 1;
+									local fullName = GetGuildRosterInfo(i);
+									local player = Ambiguate(fullName, "all");
+									if CEPGP.Backups[name][fullName] and not CEPGP_Info.Guild.Roster[player][9] then
+										GuildRosterSetOfficerNote(i, CEPGP.Backups[name][fullName]);
+									end
+									if i == GetNumGuildMembers() then
+										update();
+									end
+								end, GetNumGuildMembers());
 								CEPGP_Info.Backups.ConfirmRestore = false;
 								HideUIPanel(CEPGP_restore_guild_logs);
 							elseif CEPGP.Backups[name] ~= nil then
@@ -2519,10 +2532,6 @@
 			<OnLoad inherit="prepend">
 				self:RegisterForDrag("LeftButton");
 				CEPGP_guild_log_restore_desc:SetText("Select the record you would like to restore\n\n|c00FF0000Make sure this is what you want to do.\nThis will overwrite ALL current guild EPGP\nstandings with the record.");
-
-				local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
-				local frame = LibDD:Create_UIDropDownMenu("CEPGP_restoreDropdown", self)
-				CEPGP_initDropdown(frame, CEPGP_initRestoreDropdownList)
 			</OnLoad>
 			<OnDragStart>
 				self:StartMoving();
@@ -2601,7 +2610,7 @@
 					</Frame>
 				</ScrollChild>
 			</ScrollFrame>
-			<CheckButton name="$parent_verbose_check" inherits="UICheckButtonTemplate">
+			<CheckButton name="$parent_verbose_check" inherits="UIOptionsCheckButtonTemplate">
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -2711,7 +2720,7 @@
 							return;
 						end
 						
-						if name == CEPGP_Info.NormalizedPlayerName then
+						if name == UnitName("player") then
 							return;
 						end
 						
@@ -2721,7 +2730,7 @@
 						end
 						
 						for i = 1, GetNumGuildMembers() do
-							local _name = Ambiguate(GetGuildRosterInfo(i), "mail");
+							local _name = Ambiguate(GetGuildRosterInfo(i), "all");
 							if string.lower(name) == string.lower(_name) then
 								name = _name;
 								IsInGuild = true;
@@ -2730,7 +2739,7 @@
 						
 						if not found then
 							for i = 1, GetNumGroupMembers() do
-								local _name = Ambiguate(GetGuildRosterInfo(i), "mail");
+								local _name = Ambiguate(GetGuildRosterInfo(i), "all");
 								if string.lower(name) == string.lower(_name) then
 									name = _name;
 									IsInRaid = true;
@@ -3265,7 +3274,7 @@
 	
 	<Frame name="CEPGP_traffic" frameStrata="HIGH" enableMouse="true" parent="UIParent" hidden="true" movable="true" clampedToScreen="true" inherits="BackdropTemplate">
 		<Size>
-			<AbsDimension x="1150" y="480"/>
+			<AbsDimension x="950" y="480"/>
 		</Size>
 		<Anchors>
 			<Anchor point="CENTER"/>
@@ -3449,43 +3458,41 @@
 							CEPGP_print("Sharing all traffic logs, please wait. This process will start in 10 seconds.");
 							CEPGP_traffic_share_status:SetText("Preparing to send traffic entries");
 							C_Timer.After(10, function()
-								if limit > 0 then
-									C_Timer.NewTicker(0.1, function()
-										local ID, GUID;
-										local player, issuer, action, EPB, EPA, GPB, GPA, itemID, tStamp;
+								C_Timer.NewTicker(0.1, function()
+									local ID, GUID;
+									local player, issuer, action, EPB, EPA, GPB, GPA, itemID, tStamp;
+									
+									if CEPGP.Traffic[i][9] and CEPGP.Traffic[i][10] and CEPGP.Traffic[i][11] and tonumber(CEPGP.Traffic[i][9]) ~= tonumber(CEPGP.Traffic[i][10]) then
 										
-										if CEPGP.Traffic[i][9] and CEPGP.Traffic[i][10] and CEPGP.Traffic[i][11] and tonumber(CEPGP.Traffic[i][9]) ~= tonumber(CEPGP.Traffic[i][10]) then
-											
-											player = CEPGP.Traffic[i][1];
-											issuer = CEPGP.Traffic[i][2];
-											action = CEPGP.Traffic[i][3];
-											EPB = CEPGP.Traffic[i][4] or "";
-											EPA = CEPGP.Traffic[i][5] or "";
-											GPB = CEPGP.Traffic[i][6] or "";
-											GPA = CEPGP.Traffic[i][7] or "";
-											itemID = CEPGP_getItemID(CEPGP_getItemString(CEPGP.Traffic[i][8])) or "";
-											tStamp = CEPGP.Traffic[i][9];
-											ID = CEPGP.Traffic[i][10];
-											GUID = CEPGP.Traffic[i][11];
-											
-											
-											local str = player .. ";" .. issuer .. ";" .. action .. ";" .. EPB .. ";" .. EPA .. ";" .. GPB .. ";" .. GPA .. ";" .. itemID .. ";" .. tStamp .. ";" .. ID .. ";" .. GUID;
-											CEPGP_addAddonMsg("CEPGP_TRAFFIC;" .. player .. ";" .. issuer .. ";" .. action .. ";" .. EPB .. ";" .. EPA .. ";" .. GPB .. ";" .. GPA .. ";" .. itemID .. ";" .. tStamp .. ";" .. ID .. ";" .. GUID, "GUILD");
-											CEPGP_traffic_share_status:SetText(limit-(i-1) .. " entries sent");
-										end
-										i = i - 1;
-										if i == 1 then
-											CEPGP_Info.Traffic.Sharing = false;
-											
-											C_Timer.After(5, function()
-												CEPGP_addAddonMsg("CEPGP_TRAFFICSyncStop", "GUILD");
-												CEPGP_traffic_share_status:SetText("Finished sending traffic entries");
-												CEPGP_print("Traffic logs have been shared");
-												self:Enable();
-											end);
-										end
-									end, limit);
-								end
+										player = CEPGP.Traffic[i][1];
+										issuer = CEPGP.Traffic[i][2];
+										action = CEPGP.Traffic[i][3];
+										EPB = CEPGP.Traffic[i][4] or "";
+										EPA = CEPGP.Traffic[i][5] or "";
+										GPB = CEPGP.Traffic[i][6] or "";
+										GPA = CEPGP.Traffic[i][7] or "";
+										itemID = CEPGP_getItemID(CEPGP_getItemString(CEPGP.Traffic[i][8])) or "";
+										tStamp = CEPGP.Traffic[i][9];
+										ID = CEPGP.Traffic[i][10];
+										GUID = CEPGP.Traffic[i][11];
+										
+										
+										local str = player .. ";" .. issuer .. ";" .. action .. ";" .. EPB .. ";" .. EPA .. ";" .. GPB .. ";" .. GPA .. ";" .. itemID .. ";" .. tStamp .. ";" .. ID .. ";" .. GUID;
+										CEPGP_addAddonMsg("CEPGP_TRAFFIC;" .. player .. ";" .. issuer .. ";" .. action .. ";" .. EPB .. ";" .. EPA .. ";" .. GPB .. ";" .. GPA .. ";" .. itemID .. ";" .. tStamp .. ";" .. ID .. ";" .. GUID, "GUILD");
+										CEPGP_traffic_share_status:SetText(limit-(i-1) .. " entries sent");
+									end
+									i = i - 1;
+									if i == 1 then
+										CEPGP_Info.Traffic.Sharing = false;
+										
+										C_Timer.After(5, function()
+											CEPGP_addAddonMsg("CEPGP_TRAFFICSyncStop", "GUILD");
+											CEPGP_traffic_share_status:SetText("Finished sending traffic entries");
+											CEPGP_print("Traffic logs have been shared");
+											self:Enable();
+										end);
+									end
+								end, limit);
 							end);
 						end);
 						
@@ -3648,7 +3655,7 @@
 			</Button>
 			<ScrollFrame name="trafficScrollFrame" inherits="UIPanelScrollFrameTemplate">
 				<Size>
-					<AbsDimension x="1075" y="320"/>
+					<AbsDimension x="875" y="320"/>
 				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativePoint="TOPLEFT">
@@ -3660,7 +3667,7 @@
 				<ScrollChild>
 					<Frame name="CEPGP_traffic_scrollframe_container">
 						<Size>
-							<AbsDimension x="940" y="300" />
+							<AbsDimension x="740" y="300" />
 						</Size>
 					</Frame>
 				</ScrollChild>
@@ -3671,8 +3678,8 @@
 				self:RegisterForDrag("LeftButton");
 				self:EnableKeyboard(true);
 				CEPGP_traffic_name:SetPoint("BOTTOMLEFT", trafficScrollFrame, "TOPLEFT", 7.5, 5);
-				CEPGP_traffic_issuer:SetPoint("LEFT", CEPGP_traffic_name, "LEFT", 200, 0);
-				CEPGP_traffic_action:SetPoint("LEFT", CEPGP_traffic_issuer, "LEFT", 465, 0);
+				CEPGP_traffic_issuer:SetPoint("LEFT", CEPGP_traffic_name, "LEFT", 100, 0);
+				CEPGP_traffic_action:SetPoint("LEFT", CEPGP_traffic_issuer, "LEFT", 375, 0);
 				CEPGP_traffic_epb:SetPoint("LEFT", CEPGP_traffic_action, "LEFT", 50, 0);
 				CEPGP_traffic_epa:SetPoint("LEFT", CEPGP_traffic_epb, "LEFT", 60, 0);
 				CEPGP_traffic_gpb:SetPoint("LEFT", CEPGP_traffic_epa, "LEFT", 50, 0);
@@ -3891,29 +3898,46 @@
 					</OnLeave>
 				</Scripts>
 			</Button>
+			<Button name="CEPGP_attendance_dropdown" inherits="UIDropDownMenuTemplate">
+				<Anchors>
+					<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="-5" y="5" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnShow>
+						UIDropDownMenu_Initialize(self, CEPGP_attendanceDropdown);
+						UIDropDownMenu_SetWidth(self, 140);
+					</OnShow>
+					<OnLoad>
+						CEPGP_initDropdown(self, CEPGP_attendanceDropdown);
+					</OnLoad>
+				</Scripts>
+			</Button>
 			<Button name="CEPGP_attendance_record_view" inherits="GameMenuButtonTemplate" text="Filter by Snapshot">
 				<Size>
 					<AbsDimension x="130" y="20"/>
 				</Size>
 				<Anchors>
-					<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMLEFT">
+					<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="CEPGP_attendance_dropdown">
 						<Offset>
-							<AbsDimension x="170" y="15" />
+							<AbsDimension x="-12" y="0"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
 				<Scripts>
 					<OnClick>
 						PlaySound(799);
-						local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
-						if LibDD:UIDropDownMenu_GetSelectedValue(CEPGP_attendance_dropdown) == nil then
+						if UIDropDownMenu_GetSelectedValue(CEPGP_attendance_dropdown) == nil then
 							return;
 						end
-						if LibDD:UIDropDownMenu_GetSelectedValue(CEPGP_attendance_dropdown) == 0 then
+						if UIDropDownMenu_GetSelectedValue(CEPGP_attendance_dropdown) == 0 then
 							CEPGP_Info.Attendance.SelectedSnapshot = nil;
 							CEPGP_attendance_desc:SetText("Snapshot Summary");
 						else
-							CEPGP_Info.Attendance.SelectedSnapshot = LibDD:UIDropDownMenu_GetSelectedValue(CEPGP_attendance_dropdown);
+							CEPGP_Info.Attendance.SelectedSnapshot = UIDropDownMenu_GetSelectedValue(CEPGP_attendance_dropdown);
 							CEPGP_attendance_desc:SetText("Viewing Snapshot: " .. date("%A %d %B, %Y, %H:%M", CEPGP.Attendance[CEPGP_Info.Attendance.SelectedSnapshot][1]));
 						end
 						CEPGP_UpdateAttendanceScrollBar();
@@ -4161,11 +4185,6 @@
 			<KeyValue key="backdropColor" value="CEPGP_BLACK" type="global" />
 		</KeyValues>
 		<Scripts>
-			<OnLoad>
-				local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
-				local frame = LibDD:Create_UIDropDownMenu("CEPGP_attendance_dropdown", self)
-				CEPGP_initDropdown(frame, CEPGP_attendanceDropdown)
-			</OnLoad>
 			<OnMouseDown>
 				self:StartMoving();
 			</OnMouseDown>
@@ -4173,8 +4192,6 @@
 				self:StopMovingOrSizing();
 			</OnMouseUp>
 			<OnShow>
-			    CEPGP_attendance:SetBackdrop(CEPGP_BACKDROP)
-			    CEPGP_attendance:SetBackdropColor(CEPGP_BLACK:GetRGBA())
 				CEPGP_localise(self);
 			</OnShow>
 		</Scripts>
@@ -4637,7 +4654,7 @@
 					</Layer>
 				</Layers>
 				<Frames>
-					<CheckButton name="CEPGP_export_class_check" inherits="UICheckButtonTemplate" checked="true">
+					<CheckButton name="CEPGP_export_class_check" inherits="UIOptionsCheckButtonTemplate" checked="true">
 						<HitRectInsets>
 							<AbsInset left="0" right="0" top="0" bottom="0" />
 						</HitRectInsets>
@@ -4661,7 +4678,7 @@
 							</OnLeave>
 						</Scripts>
 					</CheckButton>
-					<CheckButton name="CEPGP_export_rank_check" inherits="UICheckButtonTemplate" checked="true">
+					<CheckButton name="CEPGP_export_rank_check" inherits="UIOptionsCheckButtonTemplate" checked="true">
 						<HitRectInsets>
 							<AbsInset left="0" right="0" top="0" bottom="0" />
 						</HitRectInsets>
@@ -4685,7 +4702,7 @@
 							</OnLeave>
 						</Scripts>
 					</CheckButton>
-					<CheckButton name="CEPGP_export_PR_check" inherits="UICheckButtonTemplate" checked="true">
+					<CheckButton name="CEPGP_export_PR_check" inherits="UIOptionsCheckButtonTemplate" checked="true">
 						<HitRectInsets>
 							<AbsInset left="0" right="0" top="0" bottom="0" />
 						</HitRectInsets>
@@ -4709,7 +4726,7 @@
 							</OnLeave>
 						</Scripts>
 					</CheckButton>
-					<CheckButton name="CEPGP_export_trailing_check" inherits="UICheckButtonTemplate" checked="true">
+					<CheckButton name="CEPGP_export_trailing_check" inherits="UIOptionsCheckButtonTemplate" checked="true">
 						<HitRectInsets>
 							<AbsInset left="0" right="0" top="0" bottom="0" />
 						</HitRectInsets>
@@ -4944,7 +4961,7 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<CheckButton name="CEPGP_standby_addRank_1_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_standby_addRank_1_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -4960,7 +4977,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_standby_addRank_2_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_standby_addRank_2_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -4976,7 +4993,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_standby_addRank_3_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_standby_addRank_3_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -4992,7 +5009,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_standby_addRank_4_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_standby_addRank_4_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5008,7 +5025,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_standby_addRank_5_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_standby_addRank_5_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5024,7 +5041,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_standby_addRank_6_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_standby_addRank_6_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5040,7 +5057,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_standby_addRank_7_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_standby_addRank_7_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5056,7 +5073,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_standby_addRank_8_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_standby_addRank_8_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5072,7 +5089,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_standby_addRank_9_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_standby_addRank_9_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5088,7 +5105,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_standby_addRank_10_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_standby_addRank_10_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5296,7 +5313,7 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<CheckButton name="CEPGP_exclude_rank_1_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_exclude_rank_1_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5312,7 +5329,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_exclude_rank_2_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_exclude_rank_2_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5328,7 +5345,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_exclude_rank_3_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_exclude_rank_3_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5344,7 +5361,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_exclude_rank_4_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_exclude_rank_4_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5360,7 +5377,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_exclude_rank_5_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_exclude_rank_5_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5376,7 +5393,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_exclude_rank_6_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_exclude_rank_6_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5392,7 +5409,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_exclude_rank_7_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_exclude_rank_7_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5408,7 +5425,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_exclude_rank_8_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_exclude_rank_8_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5424,7 +5441,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_exclude_rank_9_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_exclude_rank_9_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5440,7 +5457,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_exclude_rank_10_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_exclude_rank_10_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5650,7 +5667,7 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<CheckButton name="CEPGP_filter_rank_1_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_filter_rank_1_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5666,7 +5683,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_filter_rank_2_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_filter_rank_2_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5682,7 +5699,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_filter_rank_3_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_filter_rank_3_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5698,7 +5715,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_filter_rank_4_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_filter_rank_4_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5714,7 +5731,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_filter_rank_5_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_filter_rank_5_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5730,7 +5747,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_filter_rank_6_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_filter_rank_6_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5746,7 +5763,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_filter_rank_7_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_filter_rank_7_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5762,7 +5779,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_filter_rank_8_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_filter_rank_8_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5778,7 +5795,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_filter_rank_9_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_filter_rank_9_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -5794,7 +5811,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="CEPGP_filter_rank_10_check" inherits="UICheckButtonTemplate" >
+			<CheckButton name="CEPGP_filter_rank_10_check" inherits="UIOptionsCheckButtonTemplate" >
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="0" bottom="0" />
 				</HitRectInsets>
@@ -6893,10 +6910,24 @@
 					</Layer>
 				</Layers>
 				<Frames>
-					<Button name="CEPGP_interface_options_license" inherits="GameMenuButtonTemplate" text="View EULA">
+					<Button name="CEPGP_interface_options_changelog" inherits="GameMenuButtonTemplate" text="View Changelog">
 						<Size x="125" y="21" />
 						<Anchors>
 							<Anchor point="TOPLEFT" />
+						</Anchors>
+						<Scripts>
+							<OnClick>
+								PlaySound(799);
+								if _G["CEPGP_changelog"] then
+									CEPGP_changelog:Show();
+								end
+							</OnClick>
+						</Scripts>
+					</Button>
+					<Button name="CEPGP_interface_options_license" inherits="GameMenuButtonTemplate" text="View EULA">
+						<Size x="125" y="21" />
+						<Anchors>
+							<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="CEPGP_interface_options_changelog" />
 						</Anchors>
 						<Scripts>
 							<OnClick>
@@ -6997,7 +7028,7 @@
 											</OnLeave>
 										</Scripts>
 									</Button>
-									<CheckButton name="CEPGP_interface_options_forced_sync_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_interface_options_forced_sync_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -7126,7 +7157,7 @@
 											</OnShow>
 										</Scripts>
 									</Frame>
-									<CheckButton name="CEPGP_interface_options_display_minimap_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_interface_options_display_minimap_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -7147,7 +7178,7 @@
 											</OnShow>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_interface_options_decay_independent_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_interface_options_decay_independent_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -7280,17 +7311,46 @@
 											</OnLoad>
 										</Scripts>
 									</EditBox>
+									<Frame name="CEPGP_interface_options_def_channel_dropdown" inherits="UIDropDownMenuTemplate">
+										<Anchors>
+											<Anchor point="TOPRIGHT" relativePoint="BOTTOMRIGHT" relativeTo="CEPGP_sync_accepted_ranks" />
+										</Anchors>
+										<Layers>
+											<Layer level="OVERLAY">
+												<FontString name="$parent_text" inherits="GameFontNormal" text="Reporting Channel">
+													<Anchors>
+														<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT" x="16" y="3" />
+													</Anchors>
+												</FontString>
+											</Layer>
+										</Layers>
+										<Scripts>
+											<OnShow>
+												UIDropDownMenu_SetWidth(self, 140);
+												UIDropDownMenu_Initialize(self, CEPGP_defChannelDropdown);
+											</OnShow>
+											<OnEnter>
+												GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT");
+												GameTooltip:SetText("Sets the channel that EPGP modifications are sent to.");
+											</OnEnter>
+											<OnLeave>
+												GameTooltip:Hide();
+											</OnLeave>
+											<OnLoad>
+												CEPGP_initDropdown(self, CEPGP_defChannelDropdown);
+												
+												local point, ref, relPoint, x, y = self:GetPoint();
+												y = y - _G[self:GetName() .. "_text"]:GetStringHeight() - 5;
+												self:SetPoint(point, ref, relPoint, x, y);
+											</OnLoad>
+										</Scripts>
+									</Frame>
 								</Frames>
 							</Frame>
 						</ScrollChild>
 					</ScrollFrame>
 				</Frames>
 				<Scripts>
-					<OnLoad>
-						local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
-						local frame = LibDD:Create_UIDropDownMenu("CEPGP_interface_options_def_channel_dropdown", self)
-						CEPGP_initDropdown(frame, CEPGP_defChannelDropdown)
-					</OnLoad>
 					<OnShow>
 						local parent = self:GetParent();
 						self:SetWidth(parent:GetWidth()-20);
@@ -7368,7 +7428,7 @@
 						<Anchors>
 							<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="CEPGP_options_alt_mangement_ScrollFrame">
 								<Offset>
-									<AbsDimension x="0" y="-30" />
+									<AbsDimension x="0" y="-55" />
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -7449,8 +7509,8 @@
 									return;
 								end
 								
-								main = Ambiguate(GetGuildRosterInfo(mainIndex), "mail");
-								alt = Ambiguate(GetGuildRosterInfo(altIndex), "mail");
+								main = Ambiguate(GetGuildRosterInfo(mainIndex), "all");
+								alt = Ambiguate(GetGuildRosterInfo(altIndex), "all");
 								
 								CEPGP_options_alt_mangement_main_link:SetText(main);
 								CEPGP_options_alt_mangement_alt_link:SetText(alt);
@@ -7575,7 +7635,7 @@
 							</OnClick>
 						</Scripts>
 					</Button>
-					<CheckButton name="CEPGP_options_alt_mangement_block_awarding" inherits="UICheckButtonTemplate">
+					<CheckButton name="CEPGP_options_alt_mangement_block_awarding" inherits="UIOptionsCheckButtonTemplate">
 						<HitRectInsets>
 							<AbsInset left="0" right="0" top="0" bottom="0" />
 						</HitRectInsets>
@@ -7612,7 +7672,7 @@
 							</OnShow>
 						</Scripts>
 					</CheckButton>
-					<CheckButton name="CEPGP_options_alt_mangement_sync_ep" inherits="UICheckButtonTemplate">
+					<CheckButton name="CEPGP_options_alt_mangement_sync_ep" inherits="UIOptionsCheckButtonTemplate">
 						<HitRectInsets>
 							<AbsInset left="0" right="0" top="0" bottom="0" />
 						</HitRectInsets>
@@ -7649,7 +7709,7 @@
 							</OnShow>
 						</Scripts>
 					</CheckButton>
-					<CheckButton name="CEPGP_options_alt_mangement_sync_gp" inherits="UICheckButtonTemplate">
+					<CheckButton name="CEPGP_options_alt_mangement_sync_gp" inherits="UIOptionsCheckButtonTemplate">
 						<HitRectInsets>
 							<AbsInset left="0" right="0" top="0" bottom="0" />
 						</HitRectInsets>
@@ -7686,6 +7746,67 @@
 							</OnShow>
 						</Scripts>
 					</CheckButton>
+					<CheckButton name="CEPGP_options_alt_mangement_auto_generate" inherits="UIOptionsCheckButtonTemplate">
+						<HitRectInsets>
+							<AbsInset left="0" right="0" top="0" bottom="0" />
+						</HitRectInsets>
+						<Anchors>
+							<Anchor point="TOPRIGHT" relativePoint="BOTTOMRIGHT" relativeTo="CEPGP_options_alt_mangement_alt_link">
+								<Offset>
+									<AbsDimension x="5" y="75" />
+								</Offset>
+							</Anchor>
+						</Anchors>
+						<Scripts>
+							<OnClick>
+								if self:GetChecked() then
+									CEPGP.Alt.Auto = true;
+									CEPGP_print("Alt link auto generation enabled");
+									CEPGP_options_alt_mangement_main_link:Disable();
+									CEPGP_options_alt_mangement_alt_link:Disable();
+									CEPGP_options_alt_mangement_add_link:Disable();
+									CEPGP_options_alt_mangement_remove_link:Disable();
+									CEPGP_options_alt_mangement_remove_main:Disable();
+									CEPGP_options_alt_mangement_clear_fields:Disable();
+								else
+									CEPGP.Alt.Auto = false;
+									CEPGP_print("Alt link auto generation disabled");
+									CEPGP_options_alt_mangement_main_link:Enable();
+									CEPGP_options_alt_mangement_alt_link:Enable();
+									CEPGP_options_alt_mangement_add_link:Enable();
+									CEPGP_options_alt_mangement_remove_link:Enable();
+									CEPGP_options_alt_mangement_remove_main:Enable();
+									CEPGP_options_alt_mangement_clear_fields:Enable();
+								end
+							</OnClick>
+							<OnEnter>
+								GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT");
+								GameTooltip:SetText("Alt links are automatically generated by entering the characters main name\nin the alts player note in the games guild interface.");
+							</OnEnter>
+							<OnLeave>
+								GameTooltip:Hide();
+							</OnLeave>
+							<OnShow>
+								if CEPGP.Alt.Auto then
+									self:SetChecked(true);
+									CEPGP_options_alt_mangement_main_link:Disable();
+									CEPGP_options_alt_mangement_alt_link:Disable();
+									CEPGP_options_alt_mangement_add_link:Disable();
+									CEPGP_options_alt_mangement_remove_link:Disable();
+									CEPGP_options_alt_mangement_remove_main:Disable();
+									CEPGP_options_alt_mangement_clear_fields:Disable();
+								else
+									self:SetChecked(false);
+									CEPGP_options_alt_mangement_main_link:Enable();
+									CEPGP_options_alt_mangement_alt_link:Enable();
+									CEPGP_options_alt_mangement_add_link:Enable();
+									CEPGP_options_alt_mangement_remove_link:Enable();
+									CEPGP_options_alt_mangement_remove_main:Enable();
+									CEPGP_options_alt_mangement_clear_fields:Enable();
+								end
+							</OnShow>
+						</Scripts>
+					</CheckButton>
 				</Frames>
 				<Layers>
 					<Layer level="OVERLAY">
@@ -7713,7 +7834,11 @@
 						</FontString>
 						<FontString name="CEPGP_options_alt_mangement_new_link" inherits="GameFontNormal" text="Add/Remove Character Link">
 							<Anchors>
-								<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="CEPGP_options_alt_mangement_ScrollFrame" />
+								<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="CEPGP_options_alt_mangement_ScrollFrame">
+									<Offset>
+										<AbsDimension x="0" y="-25" />
+									</Offset>
+								</Anchor>
 							</Anchors>
 						</FontString>
 						<FontString name="CEPGP_options_alt_mangement_new_main" inherits="GameFontNormal" text="Main">
@@ -7743,6 +7868,13 @@
 						<FontString name="CEPGP_options_alt_mangement_sync_gp_text" inherits="GameFontNormal" text="Synchronise Alt GP">
 							<Anchors>
 								<Anchor point="LEFT" relativePoint="LEFT" relativeTo="CEPGP_options_alt_mangement_sync_gp">
+									<AbsDimension x="-325" y="0" />
+								</Anchor>
+							</Anchors>
+						</FontString>
+						<FontString name="CEPGP_options_alt_mangement_auto_generate_text" inherits="GameFontNormal" text="Automatically Generate Alt Links From User Note">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="LEFT" relativeTo="CEPGP_options_alt_mangement_auto_generate">
 									<AbsDimension x="-325" y="0" />
 								</Anchor>
 							</Anchors>
@@ -10074,7 +10206,7 @@
 											</OnEditFocusLost>
 										</Scripts>
 									</EditBox>
-									<CheckButton name="CEPGP_options_gp_base_decay_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_options_gp_base_decay_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -10099,7 +10231,7 @@
 											</OnLeave>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_options_gp_tooltips_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_options_gp_tooltips_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -10264,7 +10396,7 @@
 											</Layer>
 										</Layers>
 										<Frames>
-											<CheckButton name="$parent_enabled_check" inherits="UICheckButtonTemplate" checked="true">
+											<CheckButton name="$parent_enabled_check" inherits="UIOptionsCheckButtonTemplate" checked="true">
 												<HitRectInsets>
 													<AbsInset left="0" right="0" top="0" bottom="0" />
 												</HitRectInsets>
@@ -10329,7 +10461,6 @@
 													<AbsDimension x="120" y="20" />
 												</Size>
 												<Anchors>
-													<!-- <Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parent_string_discount" numeric="true"> -->
 													<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parent_string_discount">
 														<Offset>
 															<AbsDimension x="15" y="0" />
@@ -10471,7 +10602,7 @@
 											</Layer>
 										</Layers>
 										<Frames>
-											<CheckButton name="$parent_enabled_check" inherits="UICheckButtonTemplate">
+											<CheckButton name="$parent_enabled_check" inherits="UIOptionsCheckButtonTemplate">
 												<HitRectInsets>
 													<AbsInset left="0" right="0" top="0" bottom="0" />
 												</HitRectInsets>
@@ -10542,7 +10673,6 @@
 													<AbsDimension x="120" y="20" />
 												</Size>
 												<Anchors>
-													<!-- <Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parent_string_discount" numeric="true"> -->
 													<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parent_string_discount">
 														<Offset>
 															<AbsDimension x="15" y="0" />
@@ -10684,7 +10814,7 @@
 											</Layer>
 										</Layers>
 										<Frames>
-											<CheckButton name="$parent_enabled_check" inherits="UICheckButtonTemplate">
+											<CheckButton name="$parent_enabled_check" inherits="UIOptionsCheckButtonTemplate">
 												<HitRectInsets>
 													<AbsInset left="0" right="0" top="0" bottom="0" />
 												</HitRectInsets>
@@ -10755,7 +10885,6 @@
 													<AbsDimension x="120" y="20" />
 												</Size>
 												<Anchors>
-													<!-- <Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parent_string_discount" numeric="true"> -->
 													<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parent_string_discount">
 														<Offset>
 															<AbsDimension x="15" y="0" />
@@ -10900,7 +11029,7 @@
 											</Layer>
 										</Layers>
 										<Frames>
-											<CheckButton name="$parent_enabled_check" inherits="UICheckButtonTemplate">
+											<CheckButton name="$parent_enabled_check" inherits="UIOptionsCheckButtonTemplate">
 												<HitRectInsets>
 													<AbsInset left="0" right="0" top="0" bottom="0" />
 												</HitRectInsets>
@@ -10971,7 +11100,6 @@
 													<AbsDimension x="120" y="20" />
 												</Size>
 												<Anchors>
-													<!-- <Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parent_string_discount" numeric="true"> -->
 													<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parent_string_discount">
 														<Offset>
 															<AbsDimension x="15" y="0" />
@@ -11152,7 +11280,7 @@
 											</Button>
 										</Frames>
 									</Frame>
-									<CheckButton name="CEPGP_loot_options_keywords_enable" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_keywords_enable" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -11635,7 +11763,7 @@
 											</OnLoad>
 										</Scripts>
 									</EditBox>
-									<CheckButton name="CEPGP_options_raid_warning_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_options_raid_warning_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -11671,7 +11799,7 @@
 											</OnShow>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_loot_options_hide_response_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_hide_response_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -11700,7 +11828,7 @@
 										</Scripts>
 									</CheckButton>
 									
-									<CheckButton name="CEPGP_loot_options_change_of_mind_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_change_of_mind_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -11732,7 +11860,7 @@
 											</OnShow>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_loot_options_suppress_change_of_mind_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_suppress_change_of_mind_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -11760,7 +11888,7 @@
 											</OnShow>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_options_announcement_suppression_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_options_announcement_suppression_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -11803,7 +11931,7 @@
 											</OnShow>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_loot_options_announcement_delay_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_announcement_delay_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -11854,7 +11982,7 @@
 											</OnShow>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_loot_options_announcement_delay_PR_Check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_announcement_delay_PR_Check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -11882,7 +12010,7 @@
 											</OnShow>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_loot_options_announcement_delay_roll_Check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_announcement_delay_roll_Check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -11910,7 +12038,7 @@
 											</OnShow>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_loot_options_min_EP_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_min_EP_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -11983,7 +12111,7 @@
 											</OnShow>
 										</Scripts>
 									</EditBox>
-									<CheckButton name="CEPGP_loot_options_show_passes_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_show_passes_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -12008,7 +12136,7 @@
 											</OnLeave>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_loot_options_enforce_PR_sorting_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_enforce_PR_sorting_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -12033,7 +12161,7 @@
 											</OnLeave>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_loot_options_pass_roll_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_pass_roll_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -12065,7 +12193,7 @@
 											</OnShow>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_loot_options_award_pass_roll_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_award_pass_roll_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -12097,7 +12225,7 @@
 											</OnShow>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_loot_options_announce_roll_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_announce_roll_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -12129,7 +12257,7 @@
 											</OnShow>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_loot_options_resolve_roll_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_resolve_roll_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -12181,7 +12309,7 @@
 											</Layer>
 										</Layers>
 										<Frames>
-											<CheckButton name="CEPGP_loot_options_dist_assist_check" inherits="UICheckButtonTemplate">
+											<CheckButton name="CEPGP_loot_options_dist_assist_check" inherits="UIOptionsCheckButtonTemplate">
 												<HitRectInsets>
 													<AbsInset left="0" right="0" top="0" bottom="0" />
 												</HitRectInsets>
@@ -12214,7 +12342,7 @@
 													</OnLeave>
 												</Scripts>
 											</CheckButton>
-											<CheckButton name="CEPGP_loot_options_dist_raidwide_check" inherits="UICheckButtonTemplate">
+											<CheckButton name="CEPGP_loot_options_dist_raidwide_check" inherits="UIOptionsCheckButtonTemplate">
 												<HitRectInsets>
 													<AbsInset left="0" right="0" top="0" bottom="0" />
 												</HitRectInsets>
@@ -12311,7 +12439,7 @@
 									</Frame>
 									
 									<!--		Personal Features		-->
-									<CheckButton name="CEPGP_loot_options_autoshow_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_autoshow_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -12336,7 +12464,7 @@
 											</OnEnter>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_options_auto_pass_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_options_auto_pass_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -12364,7 +12492,7 @@
 											</OnShow>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_loot_options_show_PR_difference_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_show_PR_difference_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -12397,7 +12525,7 @@
 											</OnShow>
 										</Scripts>
 									</CheckButton>
-									<CheckButton name="CEPGP_loot_options_acknowledge_response_check" inherits="UICheckButtonTemplate">
+									<CheckButton name="CEPGP_loot_options_acknowledge_response_check" inherits="UIOptionsCheckButtonTemplate">
 										<HitRectInsets>
 											<AbsInset left="0" right="0" top="0" bottom="0" />
 										</HitRectInsets>
@@ -12425,16 +12553,71 @@
 											</OnShow>
 										</Scripts>
 									</CheckButton>
+									<Button name="CEPGP_min_threshold_dropdown" inherits="UIDropDownMenuTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="CEPGP_loot_options_acknowledge_response_check" />
+										</Anchors>
+										<Layers>
+											<Layer level="OVERLAY">	
+												<FontString name="$parent_label" inherits="CEPGPEditBoxOptionStringSmall" text="Auto Show Threshold" />
+											</Layer>
+										</Layers>
+										<Scripts>
+											<OnShow>
+												UIDropDownMenu_Initialize(self, CEPGP_minThresholdDropdown);
+												UIDropDownMenu_SetWidth(self, 140);
+											</OnShow>
+											<OnEnter>
+												GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT");
+												GameTooltip:SetText("Set the minimum item rarity for the CEPGP loot window to automatically show in raids.\nRequires that you are the master looter and are in a raid group.");
+											</OnEnter>
+											<OnLeave>
+												GameTooltip:Hide();
+											</OnLeave>
+											<OnLoad>
+												CEPGP_initDropdown(self, CEPGP_minThresholdDropdown);
+												
+												local point, ref, relPoint, x, y = self:GetPoint();
+												
+												y = y - _G[self:GetName() .. "_label"]:GetStringHeight()-10;
+												
+												self:SetPoint(point, ref, relPoint, x, y);
+											</OnLoad>
+										</Scripts>
+									</Button>
+									<Button name="CEPGP_loot_channel_dropdown" inherits="UIDropDownMenuTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="CEPGP_min_threshold_dropdown" />
+										</Anchors>
+										<Layers>
+											<Layer level="OVERLAY">	
+												<FontString name="$parent_label" inherits="CEPGPEditBoxOptionStringSmall" text="Response Reporting Channel" />
+											</Layer>
+										</Layers>
+										<Scripts>
+											<OnShow>
+												UIDropDownMenu_Initialize(self, CEPGP_lootChannelDropdown);
+												UIDropDownMenu_SetWidth(self, 140);
+											</OnShow>
+											<OnEnter>
+												GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT");
+												GameTooltip:SetText("Sets the channel that loot responses are sent to.\nExample: Player (class) needs.");
+											</OnEnter>
+											<OnLeave>
+												GameTooltip:Hide();
+											</OnLeave>
+											<OnLoad>
+												CEPGP_initDropdown(self, CEPGP_lootChannelDropdown);
+												
+												local point, ref, relPoint, x, y = self:GetPoint();
+												
+												y = y - _G[self:GetName() .. "_label"]:GetStringHeight()-10;
+												
+												self:SetPoint(point, ref, relPoint, x, y);
+											</OnLoad>
+										</Scripts>
+									</Button>
 								</Frames>
-								<Scripts>
-									<OnLoad>
-										local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
-										local frame = LibDD:Create_UIDropDownMenu("CEPGP_min_threshold_dropdown", self)
-										CEPGP_initDropdown(frame, CEPGP_minThresholdDropdown)
-										local frame = LibDD:Create_UIDropDownMenu("CEPGP_loot_channel_dropdown", self)
-										CEPGP_initDropdown(frame, CEPGP_lootChannelDropdown)
-									</OnLoad>
-								</Scripts>
 							</Frame>
 						</ScrollChild>
 					</ScrollFrame>
@@ -12618,7 +12801,7 @@
 											<Anchor point="TOPLEFT" />
 										</Anchors>
 										<Frames>
-											<CheckButton name="CEPGP_options_standby_ep_check" inherits="UICheckButtonTemplate">
+											<CheckButton name="CEPGP_options_standby_ep_check" inherits="UIOptionsCheckButtonTemplate">
 												<HitRectInsets>
 													<AbsInset left="0" right="0" top="0" bottom="0" />
 												</HitRectInsets>
@@ -12693,7 +12876,7 @@
 													</OnEditFocusLost>
 												</Scripts>
 											</EditBox>
-											<CheckButton name="CEPGP_options_standby_ep_share_check" inherits="UICheckButtonTemplate">
+											<CheckButton name="CEPGP_options_standby_ep_share_check" inherits="UIOptionsCheckButtonTemplate">
 												<HitRectInsets>
 													<AbsInset left="0" right="0" top="0" bottom="0" />
 												</HitRectInsets>
@@ -12736,7 +12919,7 @@
 													</OnLeave>
 												</Scripts>
 											</CheckButton>
-											<CheckButton name="CEPGP_options_standby_ep_offline_check" inherits="UICheckButtonTemplate">
+											<CheckButton name="CEPGP_options_standby_ep_offline_check" inherits="UIOptionsCheckButtonTemplate">
 												<HitRectInsets>
 													<AbsInset left="0" right="0" top="0" bottom="0" />
 												</HitRectInsets>
@@ -12768,7 +12951,7 @@
 													</OnLeave>
 												</Scripts>
 											</CheckButton>
-											<CheckButton name="CEPGP_options_standby_ep_accept_whispers_check" inherits="UICheckButtonTemplate">
+											<CheckButton name="CEPGP_options_standby_ep_accept_whispers_check" inherits="UIOptionsCheckButtonTemplate">
 												<HitRectInsets>
 													<AbsInset left="0" right="0" top="0" bottom="0" />
 												</HitRectInsets>
@@ -12855,7 +13038,7 @@
 												</Scripts>
 											</EditBox>
 											
-											<CheckButton name="CEPGP_options_standby_ep_manual_check" inherits="UICheckButtonTemplate">
+											<CheckButton name="CEPGP_options_standby_ep_manual_check" inherits="UIOptionsCheckButtonTemplate">
 												<HitRectInsets>
 													<AbsInset left="0" right="0" top="0" bottom="0" />
 												</HitRectInsets>
@@ -12890,7 +13073,7 @@
 													</OnLeave>
 												</Scripts>
 											</CheckButton>
-											<CheckButton name="CEPGP_options_standby_ep_byrank_check" inherits="UICheckButtonTemplate">
+											<CheckButton name="CEPGP_options_standby_ep_byrank_check" inherits="UIOptionsCheckButtonTemplate">
 												<HitRectInsets>
 													<AbsInset left="0" right="0" top="0" bottom="0" />
 												</HitRectInsets>
@@ -13208,12 +13391,12 @@
 				CEPGP_standby_scrollframe_container:SetWidth(width-40);
 				
 				width = sf:GetWidth();
-				CEPGP_standby_class:SetPoint("LEFT", CEPGP_standby_name, "LEFT", width/3.36, 0);
-				CEPGP_standby_rank:SetPoint("LEFT", CEPGP_standby_class, "LEFT", width/6.05, 0);
-				CEPGP_standby_EP:SetPoint("LEFT", CEPGP_standby_rank, "LEFT", width/6.05, 0);
-				CEPGP_standby_GP:SetPoint("LEFT", CEPGP_standby_EP, "LEFT", width/12.1, 0);
-				CEPGP_standby_PR:SetPoint("LEFT", CEPGP_standby_GP, "LEFT", width/12.1, 0);
-
+				CEPGP_standby_class:SetPoint("LEFT", CEPGP_standby_name, "LEFT", width/7, 0);
+				CEPGP_standby_rank:SetPoint("LEFT", CEPGP_standby_class, "LEFT", width/6, 0);
+				CEPGP_standby_EP:SetPoint("LEFT", CEPGP_standby_rank, "LEFT", width/5.5, 0);
+				CEPGP_standby_GP:SetPoint("LEFT", CEPGP_standby_EP, "LEFT", width/7, 0);
+				CEPGP_standby_PR:SetPoint("LEFT", CEPGP_standby_GP, "LEFT", width/7.5, 0);
+				
 				CEPGP_options_standby_ep_check_rank_5:SetPoint("LEFT", CEPGP_options_standby_ep_check_rank_1, "LEFT", CEPGP_standby_ranks_container:GetWidth()/3, 0);
 				CEPGP_options_standby_ep_check_rank_8:SetPoint("LEFT", CEPGP_options_standby_ep_check_rank_5, "LEFT", CEPGP_standby_ranks_container:GetWidth()/3, 0);
 				

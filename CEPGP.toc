@@ -1,10 +1,9 @@
-## Interface: 11508
+## Interface:20503
 ## Title: Classic EPGP - Obsidian
-## Author: Alumian, GrumpyPlayers (also known as <SG>Soul), Kethra
+## Author: Alumian, ElderKeltir
 ## Notes: Classic EPGP handles your guild's EPGP and master loot distribution. Usage: /CEPGP or /cep for options
 ## OptionalDependencies: AceAddon-3.0, AceComm-3.0, CallbackHandler-1.0, LibDataBroker-1.1, LibDBIcon-1.0, LibStub
 ## SavedVariables: CEPGP
-## Version: 2.1.6
 
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
@@ -15,12 +14,12 @@ Libs\AceLocale-3.0\AceLocale-3.0.lua
 Libs\AceLocale-3.0\AceLocale-3.0.xml
 Libs\AceAddon-3.0\AceAddon-3.0.lua
 Libs\AceAddon-3.0\AceAddon-3.0.xml
-Libs\LibUIDropDownMenu\LibUIDropDownMenu.xml
 Libs\embeds.xml
 
 Locale\Locale.xml
 
 Tokens.lua
+Compat.lua
 Virtual.xml
 Communications.lua
 Frame.xml

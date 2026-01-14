@@ -1,5 +1,4 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("CEPGP");
-local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
 
 function CEPGP_ListButton_OnClick(obj, button)
 	if button == "LeftButton" then
@@ -162,7 +161,7 @@ function CEPGP_ListButton_OnClick(obj, button)
 			_G["CEPGP_context_popup_GP_check_text"]:Hide();
 			CEPGP_context_popup_header:SetText("Add to Standby");
 			CEPGP_context_popup_title:Hide();
-			CEPGP_context_popup_desc:SetText("Add a guild member to the standby list\nFormat: Name-RealmName");
+			CEPGP_context_popup_desc:SetText("Add a guild member to the standby list");
 			CEPGP_context_amount:SetText("");
 			CEPGP_context_popup_confirm:SetScript('OnClick', function()
 				PlaySound(799);
@@ -191,7 +190,6 @@ function CEPGP_ListButton_OnClick(obj, button)
 				
 				for i = 1, GetNumGroupMembers() do
 					local name = GetRaidRosterInfo(i);
-                    name = CEPGP_NormalizeName(name); --NEW
 					table.insert(group, name);
 				end
 				for i = 1, 10 do
@@ -204,8 +202,8 @@ function CEPGP_ListButton_OnClick(obj, button)
 				
 				for i = 1, GetNumGuildMembers() do
 					local name, _, rIndex = GetGuildRosterInfo(i);
-					name = Ambiguate(name, "mail");
-					if ranks[rIndex+1] and not CEPGP_tContains(CEPGP.Standby.Roster, name) and not CEPGP_tContains(group, name) and name ~= CEPGP_Info.NormalizedPlayerName then
+					name = Ambiguate(name, "all");
+					if ranks[rIndex+1] and not CEPGP_tContains(CEPGP.Standby.Roster, name) and not CEPGP_tContains(group, name) and name ~= UnitName("player") then
 						local _, class, rank, _, oNote, _, classFile = CEPGP_getGuildInfo(name);
 						local EP,GP = CEPGP_getEPGP(name, i);
 						local entry = {
@@ -350,7 +348,7 @@ function CEPGP_ListButton_OnClick(obj, button)
 			CEPGP_context_popup_EP_check:SetChecked(1);
 			CEPGP_context_popup_GP_check:SetChecked(nil);
 			CEPGP_context_popup_header:SetText("Guild Moderation");
-			CEPGP_context_popup_title:SetText("Modify EP/GP for " .. Ambiguate(name,"mail"));
+			CEPGP_context_popup_title:SetText("Modify EP/GP for " .. name);
 			CEPGP_context_popup_desc:SetText("Add/Subtract EP");
 			CEPGP_context_amount:SetText("0");
 			CEPGP_context_popup_confirm:SetScript('OnClick', function()
@@ -470,7 +468,7 @@ function CEPGP_ListButton_OnClick(obj, button)
 			CEPGP_context_popup_EP_check:SetChecked(1);
 			CEPGP_context_popup_GP_check:SetChecked(nil);
 			CEPGP_context_popup_header:SetText("Raid Moderation");
-			CEPGP_context_popup_title:SetText("Modify EP/GP for " .. Ambiguate(name,"mail"));
+			CEPGP_context_popup_title:SetText("Modify EP/GP for " .. name);
 			CEPGP_context_popup_desc:SetText("Add/Subtract EP");
 			CEPGP_context_amount:SetText("0");
 			CEPGP_context_popup_confirm:SetScript('OnClick', function()
@@ -517,6 +515,7 @@ function CEPGP_ListButton_OnClick(obj, button)
 end
 
 function CEPGP_setOverrideLink(frame, event)
+	
 	if event == "enter" then
 		local _, link = GetItemInfo(frame:GetText());
 		GameTooltip:SetOwner(frame, "ANCHOR_TOPLEFT");
@@ -529,7 +528,7 @@ end
 
 function CEPGP_distribute_popup_give()
 	for i = 1, 40 do
-		if CEPGP_NormalizeName(GetMasterLootCandidate(CEPGP_Info.Loot.SlotNum, i)) == CEPGP_Info.DistTarget then
+		if GetMasterLootCandidate(CEPGP_Info.Loot.SlotNum, i) == CEPGP_Info.DistTarget then
 			GiveMasterLoot(CEPGP_Info.Loot.SlotNum, i);
 			return;
 		end
@@ -563,69 +562,40 @@ end
 
 		--[[ Restore DropDown ]]--
 
-function CEPGP_initRestoreDropdownList(frame, level, menuList)
-	frame:SetPoint("CENTER", "CEPGP_restore_guild_logs", "BOTTOM", 0, 70)
-	LibDD:UIDropDownMenu_SetWidth(frame, 250)
-	CEPGP_initRestoreDropdown(frame, level, menuList)
-end
-
 function CEPGP_initRestoreDropdown(frame, level, menuList)
-	local tableEntries = 0
-	for k, v in pairs(CEPGP) do
-		tableEntries = tableEntries + 1
-	end
-	if tableEntries > 0 then
-		for k, _ in pairs(CEPGP.Backups) do
-			local info = LibDD:UIDropDownMenu_CreateInfo()
-			info = {text = k, func = CEPGP_restoreDropdownOnClick};
-			local entry = LibDD:UIDropDownMenu_AddButton(info);
-		end
+	for k, _ in pairs(CEPGP.Backups) do
+		local info = {text = k, func = CEPGP_restoreDropdownOnClick};
+		local entry = UIDropDownMenu_AddButton(info);
 	end
 end
 
 function CEPGP_restoreDropdownOnClick(self, arg1, arg2, checked)
 	if (not checked) then
-		LibDD:UIDropDownMenu_SetText(CEPGP_restoreDropdown, self:GetText());
+		UIDropDownMenu_SetSelectedName(CEPGP_restoreDropdown, self:GetText());
 	end
 end
 
 		--[[ Attendance DropDown ]]--
 		
 function CEPGP_attendanceDropdown(frame, level, menuList)
-	frame:SetPoint("BOTTOMLEFT", "CEPGP_attendance", "BOTTOMLEFT", -5, 5)
-	LibDD:UIDropDownMenu_SetWidth(frame, 140)
-	local info = LibDD:UIDropDownMenu_CreateInfo()
-	info = {text = "Guild List", value = 0, func = CEPGP_attendanceChange};
-	local entry = LibDD:UIDropDownMenu_AddButton(info);
+	local info = {text = "Guild List", value = 0, func = CEPGP_attendanceChange};
+	local entry = UIDropDownMenu_AddButton(info);
 	for i = 1, CEPGP_ntgetn(CEPGP.Attendance) do
 		local info = {text = date("%d/%m/%Y %H:%M", CEPGP.Attendance[i][1]), value = i, func = CEPGP_attendanceChange};
-		local entry = LibDD:UIDropDownMenu_AddButton(info);
+		local entry = UIDropDownMenu_AddButton(info);
 	end
 end
 
 function CEPGP_attendanceChange(self, arg1, arg2, checked)
 	if (not checked) then
-		LibDD:UIDropDownMenu_SetText(CEPGP_attendance_dropdown, self:GetText());
+		UIDropDownMenu_SetSelectedName(CEPGP_attendance_dropdown, self:GetText());
+		UIDropDownMenu_SetSelectedValue(CEPGP_attendance_dropdown, self.value);
 	end
 end
 
 		--[[ Minimum Threshold DropDown ]]--
 
 function CEPGP_minThresholdDropdown(frame, level, menuList)
-	local label = frame:CreateFontString(nil, "OVERLAY", "CEPGPEditBoxOptionStringSmall")
-	label:SetText("Auto Show Threshold")
-	label:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 16, 3)
-	label:SetJustifyH("LEFT")
-	frame:HookScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
-        GameTooltip:SetText("Set the minimum item rarity for the CEPGP loot window to automatically show in raids.\nRequires that you are the master looter and are in a raid group.")
-        GameTooltip:Show()
-    end)
-    frame:HookScript("OnLeave", function(self)
-        GameTooltip:Hide()
-    end)
-	frame:SetPoint("TOPLEFT", "CEPGP_loot_options_acknowledge_response_check", "BOTTOMLEFT", 0, -16)
-	LibDD:UIDropDownMenu_SetWidth(frame, 140)
 	local rarity = {
 		[0] = "|cFF9D9D9DPoor|r",
 		[1] = "|cFFFFFFFFCommon|r",
@@ -634,29 +604,21 @@ function CEPGP_minThresholdDropdown(frame, level, menuList)
 		[4] = "|cFFA335EEEpic|r",
 		[5] = "|cFFFF8000Legendary|r"
 	};
-	local tableEntries = 0
-	for k, v in pairs(CEPGP) do
-		tableEntries = tableEntries + 1
-	end
 	for i = 0, 5 do
-		local info = LibDD:UIDropDownMenu_CreateInfo()
-		local checked = nil
-		if tableEntries > 0 and i == CEPGP.Loot.MinThreshold then checked = 1 end
-		info = {
+		local info = {
 			text = rarity[i],
 			value = i,
-			func = CEPGP_minThresholdChange,
-			checked = checked
+			func = CEPGP_minThresholdChange
 		};
-		local entry = LibDD:UIDropDownMenu_AddButton(info);
-	end	
-	if tableEntries > 0 then
-		LibDD:UIDropDownMenu_SetText(frame, rarity[CEPGP.Loot.MinThreshold]);
+		local entry = UIDropDownMenu_AddButton(info);
 	end
+	UIDropDownMenu_SetSelectedName(CEPGP_min_threshold_dropdown, rarity[CEPGP.Loot.MinThreshold]);
+	--UIDropDownMenu_SetSelectedValue(CEPGP.Loot.MinThreshold_dropdown, CEPGP.Loot.MinThreshold);
 end
 
 function CEPGP_minThresholdChange(self, value)
-	LibDD:UIDropDownMenu_SetText(CEPGP_min_threshold_dropdown, self:GetText());
+	UIDropDownMenu_SetSelectedName(CEPGP_min_threshold_dropdown, self:GetText());
+	--UIDropDownMenu_SetSelectedValue(CEPGP.Loot.MinThreshold_dropdown, self.value);
 	CEPGP.Loot.MinThreshold = self.value;
 	CEPGP_print("Minimum auto show threshold is now set to " .. self:GetText());
 end
@@ -664,53 +626,30 @@ end
 		--[[ Default Channel DropDown ]]--
 		
 function CEPGP_defChannelDropdown(frame, level, menuList)
-	local label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	label:SetText("Reporting Channel")
-	label:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 16, 3)
-	label:SetJustifyH("LEFT")
-	frame:HookScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
-        GameTooltip:SetText("Sets the channel that EPGP modifications are sent to.")
-        GameTooltip:Show()
-    end)
-    frame:HookScript("OnLeave", function(self)
-        GameTooltip:Hide()
-    end)
-	frame:SetPoint("TOPRIGHT", "CEPGP_sync_accepted_ranks", "BOTTOMRIGHT", 0, -16)
-	LibDD:UIDropDownMenu_SetWidth(frame, 140)
 	local channels = {
 		[1] = "Party",
 		[2] = "Raid",
 		[3] = "Guild",
 		[4] = "Officer"
 	};
-	local tableEntries = 0
-	for k, v in pairs(CEPGP) do
-		tableEntries = tableEntries + 1
-	end
 	for index, value in ipairs(channels) do
-		local info = LibDD:UIDropDownMenu_CreateInfo()
-		local checked = nil
-		if tableEntries > 0 and value == CEPGP.Channel then checked = 1 end
-		info = {
+		local info = {
 			text = value,
 			value = index,
-			func = CEPGP_defChannelChange,
-			checked = checked
+			func = CEPGP_defChannelChange
 		};
-		local entry = LibDD:UIDropDownMenu_AddButton(info);
+		local entry = UIDropDownMenu_AddButton(info);
 	end
 	for i = 1, #channels do
-		if tableEntries > 0 then
-			if string.lower(CEPGP.Channel) == string.lower(channels[i]) then
-				LibDD:UIDropDownMenu_SetText(frame, channels[i]);
-			end
+		if string.lower(CEPGP.Channel) == string.lower(channels[i]) then
+			UIDropDownMenu_SetSelectedName(CEPGP_interface_options_def_channel_dropdown, channels[i]);
 		end
 	end
 end
 
 function CEPGP_defChannelChange(self, value)
-	LibDD:UIDropDownMenu_SetText(CEPGP_interface_options_def_channel_dropdown, self:GetText());
+	UIDropDownMenu_SetSelectedName(CEPGP_interface_options_def_channel_dropdown, self:GetText());
+	--UIDropDownMenu_SetSelectedValue(CEPGP_interface_options_def_channel_dropdown, self.value);
 	CEPGP.Channel = self:GetText();
 	CEPGP_print("Reporting channel set to \"" .. CEPGP.Channel .. "\".");
 end
@@ -718,53 +657,31 @@ end
 		--[[ Loot Response Channel DropDown ]]--
 		
 function CEPGP_lootChannelDropdown(frame, level, menuList)
-	local label = frame:CreateFontString(nil, "OVERLAY", "CEPGPEditBoxOptionStringSmall")
-	label:SetText("Response Reporting Channel")
-	label:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 16, 3)
-	label:SetJustifyH("LEFT")
-	frame:HookScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
-        GameTooltip:SetText("Sets the channel that loot responses are sent to.\nExample: Player (class) needs.")
-        GameTooltip:Show()
-    end)
-    frame:HookScript("OnLeave", function(self)
-        GameTooltip:Hide()
-    end)
-	frame:SetPoint("TOPLEFT", "CEPGP_min_threshold_dropdown", "BOTTOMLEFT", 0, -16)
-	LibDD:UIDropDownMenu_SetWidth(frame, 140)
 	local channels = {
 		[1] = "Party",
 		[2] = "Raid",
 		[3] = "Guild",
 		[4] = "Officer"
 	};
-	local tableEntries = 0
-	for k, v in pairs(CEPGP) do
-		tableEntries = tableEntries + 1
-	end
 	for index, value in ipairs(channels) do
-		local info = LibDD:UIDropDownMenu_CreateInfo()
-		local checked = nil
-		if tableEntries > 0 and value == CEPGP.LootChannel then checked = 1 end
-		info = {
+		local info = {
 			text = value,
 			value = index,
-			func = CEPGP_lootChannelChange,
-			checked = checked
+			func = CEPGP_lootChannelChange
 		};
-		local entry = LibDD:UIDropDownMenu_AddButton(info);
+		local entry = UIDropDownMenu_AddButton(info);
 	end
 	for i = 1, #channels do
-		if tableEntries > 0 then
-			if string.lower(CEPGP.LootChannel) == string.lower(channels[i]) then
-				LibDD:UIDropDownMenu_SetText(frame, channels[i]);
-			end
+		if string.lower(CEPGP.LootChannel) == string.lower(channels[i]) then
+			UIDropDownMenu_SetSelectedName(CEPGP_loot_channel_dropdown, channels[i]);
+			--UIDropDownMenu_SetSelectedValue(CEPGP_loot_channel_dropdown, i);
 		end
 	end
 end
 
 function CEPGP_lootChannelChange(self, value)
-	LibDD:UIDropDownMenu_SetText(CEPGP_loot_channel_dropdown, self:GetText());
+	UIDropDownMenu_SetSelectedName(CEPGP_loot_channel_dropdown, self:GetText());
+	--UIDropDownMenu_SetSelectedValue(CEPGP_loot_channel_dropdown, self.value);
 	CEPGP.LootChannel = self:GetText();
 	CEPGP_print("Loot response channel set to \"" .. CEPGP.LootChannel .. "\".");
 end
