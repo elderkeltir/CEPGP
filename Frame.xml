@@ -6912,24 +6912,10 @@
 					</Layer>
 				</Layers>
 				<Frames>
-					<Button name="CEPGP_interface_options_changelog" inherits="GameMenuButtonTemplate" text="View Changelog">
-						<Size x="125" y="21" />
-						<Anchors>
-							<Anchor point="TOPLEFT" />
-						</Anchors>
-						<Scripts>
-							<OnClick>
-								PlaySound(799);
-								if _G["CEPGP_changelog"] then
-									CEPGP_changelog:Show();
-								end
-							</OnClick>
-						</Scripts>
-					</Button>
 					<Button name="CEPGP_interface_options_license" inherits="GameMenuButtonTemplate" text="View EULA">
 						<Size x="125" y="21" />
 						<Anchors>
-							<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="CEPGP_interface_options_changelog" />
+							<Anchor point="TOPLEFT" />
 						</Anchors>
 						<Scripts>
 							<OnClick>
@@ -7048,12 +7034,26 @@
 													local targetheight = CEPGP_sync_rank_text:GetTop()-CEPGP_sync_accepted_rank_4_check:GetBottom();
 													local counter = 1;
 													local rate = 25;
+													local function setAlpha(delta)
+														local alpha = CEPGP_sync_accepted_ranks:GetAlpha();
+														if type(alpha) ~= "number" then
+															alpha = 0;
+														end
+														alpha = alpha + delta;
+														if alpha &lt; 0 then
+															alpha = 0;
+														elseif alpha &gt; 1 then
+															alpha = 1;
+														end
+														CEPGP_sync_accepted_ranks:SetAlpha(alpha);
+													end
 													if expand then
+														CEPGP_sync_accepted_ranks:SetAlpha(0);
 														C_Timer.NewTicker(0.01, function()
 															CEPGP_sync_accepted_ranks:SetHeight(CEPGP_sync_accepted_ranks:GetHeight()+targetheight/rate);
 															if counter == rate then
 																C_Timer.NewTicker(0.01, function()
-																	CEPGP_sync_accepted_ranks:SetAlpha(CEPGP_sync_accepted_ranks:GetAlpha()+0.1);
+																	setAlpha(0.1);
 																end, 10);
 																self:Enable();
 															end
@@ -7062,7 +7062,7 @@
 														end, rate);
 													else
 														C_Timer.NewTicker(0.01, function()
-															CEPGP_sync_accepted_ranks:SetAlpha(CEPGP_sync_accepted_ranks:GetAlpha()-0.1);
+															setAlpha(-0.1);
 														end, 10);
 														
 														C_Timer.NewTicker(0.01, function()
@@ -11301,12 +11301,26 @@
 													local counter = 1;
 													local rate = 25;
 													local frame = CEPGP_loot_options_keywords;
+													local function setAlpha(delta)
+														local alpha = frame:GetAlpha();
+														if type(alpha) ~= "number" then
+															alpha = 0;
+														end
+														alpha = alpha + delta;
+														if alpha &lt; 0 then
+															alpha = 0;
+														elseif alpha &gt; 1 then
+															alpha = 1;
+														end
+														frame:SetAlpha(alpha);
+													end
 													if expand then
+														frame:SetAlpha(0);
 														C_Timer.NewTicker(0.01, function()
 															frame:SetHeight(frame:GetHeight()+targetheight/rate);
 															if counter == rate then
 																C_Timer.NewTicker(0.01, function()
-																	frame:SetAlpha(frame:GetAlpha()+0.1);
+																	setAlpha(0.1);
 																end, 10);
 																self:Enable();
 																CEPGP_loot_options_keywords_scrollframe:Show();
@@ -11320,7 +11334,7 @@
 													else
 														local ticker;
 														ticker = C_Timer.NewTicker(0.01, function()
-															frame:SetAlpha(frame:GetAlpha()-0.1);
+															setAlpha(-0.1);
 															if ticker._remainingIterations == 1 then
 																CEPGP_loot_options_keywords_scrollframe:Hide();
 																C_Timer.NewTicker(0.01, function()

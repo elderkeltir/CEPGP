@@ -247,7 +247,7 @@ CEPGP_Info = {
 		Source =				""
 	},
 	Version = 					{
-		Number =				"2.0.1",
+		Number =				"2.1.0",
 		Build =					"Release",
 		List =					{
 		},
@@ -1109,7 +1109,7 @@ function CEPGP_initMinimapIcon()
 			end,
 			OnEnter = function(self)
 				local inRaidText = "\nCEPGP is " .. (CEPGP_Info.Active[1] and "|cFF00FF00active|r|c00FFC100" or "|cFFFF0000inactive|r|c00FFC100") .. " for this raid\n";
-				local text = "|c00FFC100Classic EPGP\nVersion: " .. CEPGP_Info.Version.Number .. " " .. CEPGP_Info.Version.Build .. "|r\n" .. ((IsInRaid() and CEPGP_isML() == 0) and inRaidText or "") .. "\nLeft Click: Show the main CEPGP window\nMiddle Click: View CEPGP version information\nRight Click: Open the CEPGP configuration";
+				local text = "|c00FFC100Classic EPGP <Obsidian>\nVersion: " .. CEPGP_Info.Version.Number .. " " .. CEPGP_Info.Version.Build .. "|r\n" .. ((IsInRaid() and CEPGP_isML() == 0) and inRaidText or "") .. "\nLeft Click: Show the main CEPGP window\nMiddle Click: View CEPGP version information\nRight Click: Open the CEPGP configuration";
 				GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT");
 				GameTooltip:SetText(text);
 			end,

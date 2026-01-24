@@ -1434,14 +1434,20 @@ function CEPGP_rosterUpdate(event)
 			local _, _, _, _, class, classFileName = CEPGP_GetRaidRosterInfo(i);
 			local isML = select(11, CEPGP_GetRaidRosterInfo(i));
 			local rank, rankIndex, EP, GP, PR;
-
 			local guildRow = CEPGP_Info.Guild.Roster[name];
 			if guildRow then
 				rank = guildRow[3];
 				rankIndex = guildRow[4];
-				EP = guildRow[2] or 0;
-				GP = guildRow[3] and guildRow[2] and guildRow[3] or CEPGP.GP.Min;
-				PR = (EP and GP) and math.floor((EP/GP)*100)/100 or 0;
+				local officerNote = guildRow[5];
+				if CEPGP_checkEPGP(officerNote) then
+					EP = tonumber(strsub(officerNote, 1, strfind(officerNote, ",")-1)) or 0;
+					GP = tonumber(strsub(officerNote, strfind(officerNote, ",")+1, string.len(officerNote))) or CEPGP.GP.Min;
+					GP = math.max(math.floor(GP), CEPGP.GP.Min);
+				else
+					EP = 0;
+					GP = CEPGP.GP.Min;
+				end
+				PR = math.floor((EP/GP)*100)/100;
 			else
 				rank = "Not in Guild";
 				rankIndex = 11;
