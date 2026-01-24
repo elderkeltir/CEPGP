@@ -1121,25 +1121,27 @@
 		</Frames>
 		<Scripts>
 			<OnLoad inherit="prepend">
-				self:RegisterEvent("LOOT_OPENED");
-				self:RegisterEvent("LOOT_CLOSED");
-				self:RegisterEvent("LOOT_SLOT_CLEARED");
-				self:RegisterEvent("CHAT_MSG_WHISPER");
-				self:RegisterEvent("ADDON_LOADED");
-				self:RegisterEvent("GUILD_ROSTER_UPDATE");
-				self:RegisterEvent("GROUP_ROSTER_UPDATE");
-				self:RegisterEvent("CHAT_MSG_MONSTER_EMOTE");
-				self:RegisterEvent("CHAT_MSG_ADDON");
-				self:RegisterEvent("CHAT_MSG_ADDON_LOGGED");
-				self:RegisterEvent("PLAYER_REGEN_DISABLED");
-				self:RegisterEvent("CHAT_MSG_MONSTER_YELL");
-				self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
-				self:RegisterEvent("PARTY_LOOT_METHOD_CHANGED");
-				self:RegisterEvent("CHAT_MSG_BN_WHISPER");
-				self:RegisterEvent("GET_ITEM_INFO_RECEIVED");
-				self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED");
-				self:RegisterEvent("PLAYER_ROLES_ASSIGNED");
-				self:RegisterEvent("ENCOUNTER_END");
+				if not CEPGP_Info.DisableEventRegistration then
+					self:RegisterEvent("LOOT_OPENED");
+					self:RegisterEvent("LOOT_CLOSED");
+					self:RegisterEvent("LOOT_SLOT_CLEARED");
+					self:RegisterEvent("CHAT_MSG_WHISPER");
+					self:RegisterEvent("ADDON_LOADED");
+					self:RegisterEvent("GUILD_ROSTER_UPDATE");
+					self:RegisterEvent("GROUP_ROSTER_UPDATE");
+					self:RegisterEvent("CHAT_MSG_MONSTER_EMOTE");
+					self:RegisterEvent("CHAT_MSG_ADDON");
+					self:RegisterEvent("CHAT_MSG_ADDON_LOGGED");
+					self:RegisterEvent("PLAYER_REGEN_DISABLED");
+					self:RegisterEvent("CHAT_MSG_MONSTER_YELL");
+					self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
+					self:RegisterEvent("PARTY_LOOT_METHOD_CHANGED");
+					self:RegisterEvent("CHAT_MSG_BN_WHISPER");
+					self:RegisterEvent("GET_ITEM_INFO_RECEIVED");
+					self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED");
+					self:RegisterEvent("PLAYER_ROLES_ASSIGNED");
+					self:RegisterEvent("ENCOUNTER_END");
+				end
 			</OnLoad>
 			<OnMouseDown>
 				self:StartMoving();
@@ -7292,8 +7294,8 @@
 												
 												value = tonumber(value);
 												
-												if 0.0001 > tonumber(value) then
-													CEPGP_print("Specify a rate faster than " .. value, true);
+												if (1/30) > tonumber(value) then
+													CEPGP_print("Specify a rate slower than " .. (1/30), true);
 													self:SetText(CEPGP.PollRate);
 													return;
 												end

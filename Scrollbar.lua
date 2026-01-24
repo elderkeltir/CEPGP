@@ -1,4 +1,21 @@
+local function CEPGP_IsAnyVisible(...)
+	for i = 1, select("#", ...) do
+		local name = select(i, ...);
+		local frame = _G[name];
+		if frame and frame.IsVisible and frame:IsVisible() then
+			return true;
+		end
+	end
+	return false;
+end
+
 function CEPGP_UpdateLootScrollBar(PRsort, sort)
+	if CEPGP_Info.DisableLootUIUpdates then
+		return;
+	end
+	if not CEPGP_IsAnyVisible("CEPGP_loot", "CEPGP_distribute", "CEPGP_distribute_popup", "CEPGP_loot_distributing", "CEPGP_distributing_button") then
+		return;
+	end
 	local tempTable = {};
 	local count = 1;
 	CEPGP_Info.LastRun.DistSB = GetTime();
@@ -225,6 +242,12 @@ function CEPGP_UpdateLootScrollBar(PRsort, sort)
 end
 
 function CEPGP_UpdateGuildScrollBar()
+	if CEPGP_Info.DisableGuildUIUpdates then
+		return;
+	end
+	if not CEPGP_IsAnyVisible("CEPGP_guild") then
+		return;
+	end
 	CEPGP_Info.LastRun.GuildSB = GetTime();
 	if CEPGP_ntgetn(CEPGP_Info.Guild.Roster) ~= GetNumGuildMembers() then return; end	--	This is mostly to prevent an error occurring if people check the scrollframe too soon after the UI loads
 	local call = CEPGP_Info.LastRun.GuildSB;
@@ -260,7 +283,7 @@ function CEPGP_UpdateGuildScrollBar()
 		--child:Hide();
 	end
 	local i = 1;
-	C_Timer.NewTicker(0.0001, function()
+	C_Timer.NewTicker(1/30, function()
 		if CEPGP_Info.LastRun.GuildSB ~= call then
 			quit = true;
 			return;
@@ -315,6 +338,12 @@ function CEPGP_UpdateGuildScrollBar()
 end
 
 function CEPGP_UpdateRaidScrollBar()
+	if CEPGP_Info.DisableRaidUIUpdates then
+		return;
+	end
+	if not CEPGP_IsAnyVisible("CEPGP_raid") then
+		return;
+	end
 	CEPGP_Info.LastRun.RaidSB = GetTime();
 	local call = CEPGP_Info.LastRun.RaidSB;
 	local tempTable = {};
@@ -411,6 +440,12 @@ function CEPGP_UpdateRaidScrollBar()
 end
 
 function CEPGP_UpdateVersionScrollBar()
+	if CEPGP_Info.DisableVersionUIUpdates then
+		return;
+	end
+	if not CEPGP_IsAnyVisible("CEPGP_version") then
+		return;
+	end
 	CEPGP_Info.LastRun.VersionSB = GetTime();
 	local call = CEPGP_Info.LastRun.VersionSB;
 	local search = CEPGP_Info.Version.ListSearch;
@@ -552,6 +587,12 @@ function CEPGP_UpdateOverrideScrollBar()
 end
 
 function CEPGP_UpdateTrafficScrollBar()
+	if CEPGP_Info.DisableTrafficUIUpdates then
+		return;
+	end
+	if not CEPGP_IsAnyVisible("CEPGP_traffic") then
+		return;
+	end
 	CEPGP_Info.LastRun.TrafficSB = GetTime();
 	local lastRun = CEPGP_Info.LastRun.TrafficSB;
 	local kids = {_G["CEPGP_traffic_scrollframe_container"]:GetChildren()};
@@ -628,7 +669,7 @@ function CEPGP_UpdateTrafficScrollBar()
 	local i = #results;
 	
 	if #results > 0 then
-		C_Timer.NewTicker(0.0001, function()
+		C_Timer.NewTicker(1/30, function()
 			if search ~= CEPGP_traffic_search:GetText() or lastRun ~= CEPGP_Info.LastRun.TrafficSB then return; end -- Terminates the previous search if the query changes
 			local frame;
 			if _G["TrafficButton" .. i] then
@@ -729,6 +770,12 @@ function CEPGP_UpdateTrafficScrollBar()
 end
 
 function CEPGP_UpdateStandbyScrollBar()
+	if CEPGP_Info.DisableStandbyUIUpdates then
+		return;
+	end
+	if not CEPGP_IsAnyVisible("CEPGP_standby_options") then
+		return;
+	end
 	local tempTable = {};
 	local kids = {_G["CEPGP_standby_scrollframe_container"]:GetChildren()};
 	for _, child in ipairs(kids) do

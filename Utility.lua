@@ -1,6 +1,35 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("CEPGP");
 
+local function CEPGP_applyTimerGate()
+	if CEPGP_TimerGate then return; end
+	CEPGP_TimerGate = {
+		origAfter = C_Timer.After,
+		origNewTicker = C_Timer.NewTicker
+	};
+	C_Timer.After = function(delay, func)
+		if CEPGP_Info and CEPGP_Info.DisableAllTimers then
+			local stack = debugstack(2, 1, 1);
+			if stack and string.find(stack, "CEPGP") then
+				return;
+			end
+		end
+		return CEPGP_TimerGate.origAfter(delay, func);
+	end
+	C_Timer.NewTicker = function(interval, func, iterations)
+		if CEPGP_Info and CEPGP_Info.DisableAllTimers then
+			local stack = debugstack(2, 1, 1);
+			if stack and string.find(stack, "CEPGP") then
+				local dummy = { _remainingIterations = 0 };
+				function dummy:Cancel() end
+				return dummy;
+			end
+		end
+		return CEPGP_TimerGate.origNewTicker(interval, func, iterations);
+	end
+end
+
 function CEPGP_initialise()
+	CEPGP_applyTimerGate();
 	_, _, _, CEPGP_Info.ElvUI = GetAddOnInfo("ElvUI");
 	if not CEPGP_Info.ElvUI then CEPGP_Info.ElvUI = GetAddOnInfo("TukUI"); end
 	_G["CEPGP_version_number"]:SetText("Running Version: " .. CEPGP_Info.Version.Number .. " " .. CEPGP_Info.Version.Build);
@@ -44,7 +73,6 @@ end
 	local check;
 	check = C_Timer.NewTicker(0.25, function()
 		if IsInGuild() then
-			CEPGP_addAddonMsg("version-check", "GUILD");
 			CEPGP_Info.Initialised = true;
 			CEPGP_rosterUpdate("GUILD_ROSTER_UPDATE");
 			check._remainingIterations = 1;
@@ -109,7 +137,11 @@ end
 			CEPGP_print("A new version has been installed.");
 			CEPGP.ChangelogVersion = CEPGP_Info.Version.Number;
 		end
-		C_Timer.After(3, function() CEPGP_initMessageQueue(); end);
+		C_Timer.After(3, function()
+			if not CEPGP_Info.DisableMessageQueue then
+				CEPGP_initMessageQueue();
+			end
+		end);
 	end);
 end
 
@@ -150,7 +182,10 @@ function CEPGP_initSavedVars()
 	
 	CEPGP.Channel = CEPGP.Channel or "Guild";
 	CEPGP.Exclusions = CEPGP.Exclusions or {false,false,false,false,false,false,false,false,false,false};
-	CEPGP.PollRate = CEPGP.PollRate or 0.0001;
+	CEPGP.PollRate = CEPGP.PollRate or 0.05;
+	if CEPGP.PollRate < (1/30) then
+		CEPGP.PollRate = (1/30);
+	end
 	CEPGP.Sync = CEPGP.Sync or {false, {
 			[0] = false,
 			[1] = false,
@@ -1062,6 +1097,9 @@ function CEPGP_cleanTable()
 end
 
 function CEPGP_toggleFrame(frame)
+	if CEPGP_Info.DisableAllUIUpdates then
+		return;
+	end
 	for i = 1, table.getn(CEPGP_Info.CoreFrames) do
 		if CEPGP_Info.CoreFrames[i]:GetName() == frame then
 			CEPGP_Info.CoreFrames[i]:Show();
@@ -1072,8 +1110,48 @@ function CEPGP_toggleFrame(frame)
 end
 
 function CEPGP_rosterUpdate(event)
+	local function CEPGP_GetGuildRosterInfo(i)
+		if CEPGP_Info.DisableGuildRosterInfoCalls then
+			return nil;
+		end
+		return GetGuildRosterInfo(i);
+	end
+	local function CEPGP_GetRaidRosterInfo(i)
+		if CEPGP_Info.DisableGroupRosterInfoCalls then
+			return nil;
+		end
+		return GetRaidRosterInfo(i);
+	end
+	local function CEPGP_IsAnyFrameVisible()
+		local frames = {
+			"CEPGP_frame",
+			"CEPGP_guild",
+			"CEPGP_raid",
+			"CEPGP_loot",
+			"CEPGP_distribute",
+			"CEPGP_traffic",
+			"CEPGP_version",
+			"CEPGP_standby_options"
+		};
+		for i = 1, #frames do
+			local f = _G[frames[i]];
+			if f and f.IsVisible and f:IsVisible() then
+				return true;
+			end
+		end
+		return false;
+	end
+	if CEPGP_Info.DisableRosterPolling then
+		return;
+	end
+	if CEPGP_Info.DisableRosterWhenUIHidden and CEPGP_Info.RosterPrimed and not UnitInRaid("player") and not CEPGP_IsAnyFrameVisible() then
+		return;
+	end
 	if CEPGP_Info.IgnoreUpdates or not CEPGP_Info.Initialised then return; end
 	if event == "GUILD_ROSTER_UPDATE" then
+		if CEPGP_Info.DisableGuildRosterPolling then
+			return;
+		end
 		if CEPGP_Info.Guild.Polling then
 			CEPGP_Info.Guild.Rescan = true;
 			return;
@@ -1103,19 +1181,25 @@ function CEPGP_rosterUpdate(event)
 		end
 		
 		local tempRoster = {};
-		for k, _ in pairs(CEPGP_Info.Guild.Roster) do
-			tempRoster[k] = "";
+		if not CEPGP_Info.DisableGuildRosterTempRoster then
+			for k, _ in pairs(CEPGP_Info.Guild.Roster) do
+				tempRoster[k] = "";
+			end
 		end
 		
-		CEPGP_rosterUpdate("GROUP_ROSTER_UPDATE");
+		if not CEPGP_Info.DisableGroupRosterPolling and not CEPGP_Info.DisableGuildRosterCallGroup then
+			CEPGP_rosterUpdate("GROUP_ROSTER_UPDATE");
+		end
 		
 		local function update()
 			--	Purges players that have been removed from the guild from CEPGP_Info.Guild.Roster
-			for k, _ in pairs(tempRoster) do
-				CEPGP_Info.Guild.Roster[k] = nil;
+			if not CEPGP_Info.DisableGuildRosterFinalize then
+				for k, _ in pairs(tempRoster) do
+					CEPGP_Info.Guild.Roster[k] = nil;
+				end
 			end
 			
-			if CEPGP.Alt.Auto then
+			if CEPGP.Alt.Auto and not CEPGP_Info.DisableRosterAltAutoLink then
 				CEPGP.Alt.Links = {};
 				for k, v in pairs(CEPGP_Info.Guild.Roster) do
 					if CEPGP_Info.Guild.Roster[v[11]] then
@@ -1124,40 +1208,55 @@ function CEPGP_rosterUpdate(event)
 				end
 			end
 
-			if _G["CEPGP_options_alt_mangement"]:IsVisible() then
-				CEPGP_UpdateAltScrollBar();
+			if not CEPGP_Info.DisableRosterUIUpdates then
+				if _G["CEPGP_options_alt_mangement"]:IsVisible() then
+					CEPGP_UpdateAltScrollBar();
+				end
 			end
 			
 			--CEPGP_Info.Version.List = CEPGP_tSort(CEPGP_Info.Version.List, 1);
-			if _G["CEPGP_guild"]:IsVisible() and IsInGuild() then
-				CEPGP_UpdateGuildScrollBar();
-			elseif _G["CEPGP_raid"]:IsVisible() then
-				CEPGP_UpdateRaidScrollBar();
+			if not CEPGP_Info.DisableRosterUIUpdates then
+				if _G["CEPGP_guild"]:IsVisible() and IsInGuild() then
+					CEPGP_UpdateGuildScrollBar();
+				elseif _G["CEPGP_raid"]:IsVisible() then
+					CEPGP_UpdateRaidScrollBar();
+				end
 			end
-			if GetNumGuildMembers() > 0 then
+			if GetNumGuildMembers() > 0 and not CEPGP_Info.DisableRosterStandbyUpdate then
 				if CEPGP_standby_options:IsVisible() then
 					CEPGP_UpdateStandbyScrollBar();
 				end
 			end
 			
-			if CEPGP_Info.Loot.QueuedAnnouncement then
+			if CEPGP_Info.Loot.QueuedAnnouncement and not CEPGP_Info.DisableRosterQueuedAnnouncement then
 				CEPGP_Info.Loot.QueuedAnnouncement();
 				CEPGP_Info.Loot.QueuedAnnouncement = nil;
 			end
 			
-			for _, func in pairs(CEPGP_Info.RosterStack) do
-				func();
+			if not CEPGP_Info.DisableRosterStackCallbacks then
+				for _, func in pairs(CEPGP_Info.RosterStack) do
+					func();
+				end
+				CEPGP_Info.RosterStack = {};
 			end
-			CEPGP_Info.RosterStack = {};
 			CEPGP_Info.Guild.Polling = false;
-			if CEPGP_Info.Guild.Rescan then
+			if CEPGP_Info.Guild.Rescan and not CEPGP_Info.DisableGuildRosterRescan then
 				CEPGP_Info.Guild.Rescan = false;
 				CEPGP_rosterUpdate("GUILD_ROSTER_UPDATE");
 			end
+			CEPGP_Info.RosterPrimed = true;
 		end
 		
-		local i = 0;
 		local limit = GetNumGuildMembers();
+		local processed = 0;
+		local stale = CEPGP_Info.Guild.Stale or {};
+		local tick = CEPGP_Info.Guild.StaleTick or 0;
+		if CEPGP_Info.Guild.StaleLimit ~= limit then
+			stale = {};
+			CEPGP_Info.Guild.Stale = stale;
+			CEPGP_Info.Guild.StaleLimit = limit;
+			processed = 0;
+		end
 		C_Timer.NewTicker(CEPGP.PollRate, function()
 			if quit then return; end
 			if pRate ~= CEPGP.PollRate then 
@@ -1170,27 +1269,59 @@ function CEPGP_rosterUpdate(event)
 				CEPGP_rosterUpdate("GUILD_ROSTER_UPDATE");
 				return;
 			end
-			i = i + 1;
-			local name, rank, rankIndex, _, class, _, publicnote, _, online, _, classFileName = GetGuildRosterInfo(i);
+			if limit == 0 then return; end
+			local i = 1;
+			if not CEPGP_Info.DisableGuildRosterStaleMap then
+				tick = tick + 1;
+				local oldestIndex = 1;
+				local oldestTick = stale[1] or -1;
+				for idx = 2, limit do
+					local t = stale[idx] or -1;
+					if t < oldestTick then
+						oldestTick = t;
+						oldestIndex = idx;
+					end
+				end
+				i = oldestIndex;
+			end
+			local name, rank, rankIndex, _, class, _, publicnote, officerNote, online, _, classFileName = CEPGP_GetGuildRosterInfo(i);
 			if name then
-				name = Ambiguate(name, "all");
-				tempRoster[name] = nil;
-				local EP, GP = CEPGP_getEPGP(name, i);
-				local PR = math.floor((EP/GP)*100)/100;
-				CEPGP_Info.Guild.Roster[name] = {
-					[1] = i,
-					[2] = class,
-					[3] = rank,
-					[4] = rankIndex,
-					[5] = officerNote,
-					[6] = PR,
-					[7] = classFileName,
-					[8] = online,
-					[9] = (CEPGP.Guild.Exclusions[rankIndex+1] and true or nil),
-					[10] = (CEPGP.Guild.Filter[rankIndex+1] and true or nil),
-					[11] = publicnote
-				};
-				if CEPGP_Info.Import.Running or CEPGP_Info.Traffic.Sharing then
+				if CEPGP_Info.DisableGuildRosterPopulate then
+					return;
+				end
+				if not CEPGP_Info.DisableGuildRosterAmbiguate then
+					name = Ambiguate(name, "all");
+				end
+				if not CEPGP_Info.DisableGuildRosterTempRoster then
+					tempRoster[name] = nil;
+				end
+				local EP, GP, PR = 0, CEPGP.GP.Min, 0;
+				if not CEPGP_Info.DisableGuildRosterEPGP then
+					if CEPGP_checkEPGP(officerNote) then
+						EP = tonumber(strsub(officerNote, 1, strfind(officerNote, ",")-1));
+						GP = tonumber(strsub(officerNote, strfind(officerNote, ",")+1, string.len(officerNote)));
+						GP = math.max(math.floor(GP), CEPGP.GP.Min);
+					end
+					if not CEPGP_Info.DisableGuildRosterPRCalc then
+						PR = math.floor((EP/GP)*100)/100;
+					end
+				end
+				if not CEPGP_Info.DisableGuildRosterRosterWrite then
+					CEPGP_Info.Guild.Roster[name] = {
+						[1] = i,
+						[2] = class,
+						[3] = rank,
+						[4] = rankIndex,
+						[5] = officerNote,
+						[6] = PR,
+						[7] = classFileName,
+						[8] = online,
+						[9] = (CEPGP.Guild.Exclusions[rankIndex+1] and true or nil),
+						[10] = (CEPGP.Guild.Filter[rankIndex+1] and true or nil),
+						[11] = publicnote
+					};
+				end
+				if (CEPGP_Info.Import.Running or CEPGP_Info.Traffic.Sharing) and not CEPGP_Info.DisableRosterTrafficChecks then
 					if CEPGP_Info.Import.Running and CEPGP_Info.Import.Source == name then
 						if not online then
 							CEPGP_print(name .. " is offline. Importing settings has ended.");
@@ -1212,20 +1343,31 @@ function CEPGP_rosterUpdate(event)
 						end
 					end
 				end
-				CEPGP_Info.Version.List[name] = CEPGP_Info.Version.List[name] or {};
-				if online then
-					CEPGP_Info.Version.List[name][1] = CEPGP_Info.Version.List[name][1] or "Addon not enabled";
-				else
-					CEPGP_Info.Version.List[name][1] = "Offline";
+				if not CEPGP_Info.DisableRosterVersionList then
+					CEPGP_Info.Version.List[name] = CEPGP_Info.Version.List[name] or {};
+					if online then
+						CEPGP_Info.Version.List[name][1] = CEPGP_Info.Version.List[name][1] or "Addon not enabled";
+					else
+						CEPGP_Info.Version.List[name][1] = "Offline";
+					end
 				end
 			end
 
-			if i >= limit then	--	Although it should never exceed the number of guild members normally, on login, the number of guild members returns 0 and when running this loop, i becomes 1
-				update();
+			if not CEPGP_Info.DisableGuildRosterStaleMap then
+				stale[i] = tick;
+				processed = processed + 1;
+				CEPGP_Info.Guild.StaleTick = tick;
+				if processed >= limit then
+					processed = 0;
+					update();
+				end
 			end
 		end, limit);
 		
 	elseif event == "GROUP_ROSTER_UPDATE" then
+		if CEPGP_Info.DisableGroupRosterPolling then
+			return;
+		end
 		if IsInRaid() or UnitInParty("player") then
 			_G["CEPGP_button_raid"]:Show();
 			if CEPGP_version:IsVisible() then
@@ -1244,90 +1386,83 @@ function CEPGP_rosterUpdate(event)
 		--CEPGP_Info.Raid.Roster = {};
 		
 		local shadowRoster = {};
-		
-		local function update()			
+
+		local function update()
 			CEPGP_Info.Raid.Roster = shadowRoster;
 			if UnitInRaid("player") or UnitInParty("player") then
 				ShowUIPanel(CEPGP_button_raid);
-				
 			else --[[ Hides the raid and loot distribution buttons if the player is not in a raid group ]]--
 				CEPGP_Info.Mode = "guild";
 				CEPGP_toggleFrame("CEPGP_guild");
 			end
-			if _G["CEPGP_raid"]:IsVisible() then
+			if _G["CEPGP_raid"]:IsVisible() and not CEPGP_Info.DisableRosterUIUpdates then
 				CEPGP_UpdateRaidScrollBar();
 			end
+			CEPGP_Info.RosterPrimed = true;
 		end
-		
-		local i = 0;
-		--for i = 1, GetNumGroupMembers() do
+
 		local limit = GetNumGroupMembers();
-		
-		C_Timer.NewTicker(CEPGP.PollRate, function()
-			i = i + 1;
-			local name = GetRaidRosterInfo(i);
-			
+		for i = 1, limit do
+			local name = CEPGP_GetRaidRosterInfo(i);
+			if name == nil and CEPGP_Info.DisableGroupRosterInfoCalls then
+				break;
+			end
+
 			if not UnitInRaid("player") then
-				CEPGP.Standby.Roster = {};
-				if CEPGP_standby_options:IsVisible() then
-					CEPGP_UpdateStandbyScrollBar();
+				if not CEPGP_Info.DisableGroupRosterStandby then
+					CEPGP.Standby.Roster = {};
+					if CEPGP_standby_options:IsVisible() and not CEPGP_Info.DisableRosterStandbyUpdate then
+						CEPGP_UpdateStandbyScrollBar();
+					end
 				end
 			else
-				for k, v in ipairs(CEPGP.Standby.Roster) do
-					if v[1] == name then
-						table.remove(CEPGP.Standby.Roster, k); --Removes player from standby list if they have joined the raid
-						if CEPGP_isML() == 0 then
-							CEPGP_addAddonMsg("StandbyRemoved;" .. name .. ";You have been removed from the standby list because you have joined the raid.", "WHISPER", name);
-						end
-						if CEPGP_standby_options:IsVisible() then
-							CEPGP_UpdateStandbyScrollBar();
+				if not CEPGP_Info.DisableGroupRosterStandby then
+					for k, v in ipairs(CEPGP.Standby.Roster) do
+						if v[1] == name then
+							table.remove(CEPGP.Standby.Roster, k); --Removes player from standby list if they have joined the raid
+							if CEPGP_isML() == 0 then
+								CEPGP_addAddonMsg("StandbyRemoved;" .. name .. ";You have been removed from the standby list because you have joined the raid.", "WHISPER", name);
+							end
+							if CEPGP_standby_options:IsVisible() and not CEPGP_Info.DisableRosterStandbyUpdate then
+								CEPGP_UpdateStandbyScrollBar();
+							end
 						end
 					end
 				end
 			end
-			
-			local _, _, _, _, class, classFileName = GetRaidRosterInfo(i);
-			local isML = select(11, GetRaidRosterInfo(i));
-			local index = CEPGP_getIndex(name);
-			local rank;
-			
-			if index then
-				
-				rank = select(2, GetGuildRosterInfo(index));
-				local rankIndex = select(3, GetGuildRosterInfo(index));
-				
-				EP, GP = CEPGP_getEPGP(name, index);
-				local PR = math.floor((EP/GP)*100)/100;
-				
-				shadowRoster[i] = {
-					[1] = name,
-					[2] = class,
-					[3] = rank,
-					[4] = rankIndex,
-					[5] = EP,
-					[6] = GP,
-					[7] = PR,
-					[8] = classFileName,
-					[9] = isML
-				};
+
+			local _, _, _, _, class, classFileName = CEPGP_GetRaidRosterInfo(i);
+			local isML = select(11, CEPGP_GetRaidRosterInfo(i));
+			local rank, rankIndex, EP, GP, PR;
+
+			local guildRow = CEPGP_Info.Guild.Roster[name];
+			if guildRow then
+				rank = guildRow[3];
+				rankIndex = guildRow[4];
+				EP = guildRow[2] or 0;
+				GP = guildRow[3] and guildRow[2] and guildRow[3] or CEPGP.GP.Min;
+				PR = (EP and GP) and math.floor((EP/GP)*100)/100 or 0;
 			else
 				rank = "Not in Guild";
-				shadowRoster[i] = {
-					[1] = name,
-					[2] = class,
-					[3] = rank,
-					[4] = 11,
-					[5] = 0,
-					[6] = CEPGP.GP.Min,
-					[7] = 0,
-					[8] = classFileName,
-					[9] = isML
-				};
+				rankIndex = 11;
+				EP = 0;
+				GP = CEPGP.GP.Min;
+				PR = 0;
 			end
-			if i == limit then
-				update();
-			end
-		end, limit);
+
+			shadowRoster[i] = {
+				[1] = name,
+				[2] = class,
+				[3] = rank,
+				[4] = rankIndex,
+				[5] = EP,
+				[6] = GP,
+				[7] = PR,
+				[8] = classFileName,
+				[9] = isML
+			};
+		end
+		update();
 	end
 end
 
@@ -2487,6 +2622,9 @@ function CEPGP_canEquip(classID, subClassID)
 end
 
 function CEPGP_itemExists(id)
+	if CEPGP_Info.DisableLootItemQueries then
+		return false;
+	end
 	if not id or not tonumber(id) then return false; end
 	if C_Item.DoesItemExistByID(tonumber(id)) then
 		return true;
@@ -2709,6 +2847,9 @@ function CEPGP_addPlugin(plugin, iPanel, enabled, func)	-- Addon name, interface
 end
 
 function CEPGP_addTraffic(target, source, desc, EPB, EPA, GPB, GPA, itemID, tStamp)
+	if CEPGP_Info.DisableTrafficLogging then
+		return;
+	end
 	
 	if not source == UnitName("player") then return; end
 	local id = time() + GetTime();

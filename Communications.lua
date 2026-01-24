@@ -1408,9 +1408,14 @@ end
 function CEPGP_initMessageQueue()
 	local length = 0; -- The number of characters sent in the last 1 second
 	local period = 0; -- A counter to keep track of sending intervals
+	local blockedUntil = 0; -- When we can resume sending after throttling
 	local errorIndex;
 	local processQueue;
 	processQueue = function()
+		local now = GetTime();
+		if now < blockedUntil then
+			return;
+		end
 		if #CEPGP_Info.MessageStack > 0 then
 			local lastSend = 0; -- Time since the last successful send
 			for index, data in ipairs(CEPGP_Info.MessageStack) do
@@ -1419,7 +1424,7 @@ function CEPGP_initMessageQueue()
 				if delete then
 					table.remove(CEPGP_Info.MessageStack, index);
 				else
-					local tStamp = GetTime();
+					local tStamp = now;
 					local message, channel, player = data[1], data[2], data[3];
 					table.insert(CEPGP_Info.Logs, {time(), "attempt", UnitName("player"), player, message, channel});
 					if #CEPGP_Info.Logs >= 501 then
@@ -1431,7 +1436,7 @@ function CEPGP_initMessageQueue()
 					end
 					if length + #message >= 750 and tStamp - lastSend < 1 then
 						local delay = 1 - (tStamp - lastSend) + 0.25; -- 0.2 second margin added for safety
-						C_Timer.After(delay, function() processQueue(); end);
+						blockedUntil = tStamp + delay;
 						return;
 					else
 						local lastAttempt = data[4]; -- Last time a certain message attempted to send. Prevents messages from reattempting too soon
@@ -1451,17 +1456,20 @@ function CEPGP_initMessageQueue()
 					end
 				end
 			end
-			C_Timer.After(0.25, function() processQueue() end);
-		else
-			C_Timer.After(0.25, function() processQueue(); end);
 		end
 	end
-	
-	processQueue();
+
+	if CEPGP_Info.MessageTicker and CEPGP_Info.MessageTicker.Cancel then
+		CEPGP_Info.MessageTicker:Cancel();
+	end
+	CEPGP_Info.MessageTicker = C_Timer.NewTicker(0.25, processQueue);
 	
 end
 
 function CEPGP_addAddonMsg(message, channel, player)
+	if CEPGP_Info.DisableMessageQueue then
+		return;
+	end
 	table.insert(CEPGP_Info.MessageStack, {message, channel, player, 0, false});
 	table.insert(CEPGP_Info.Logs, {time(), "queued", UnitName("player"), player, message, channel});
 	if #CEPGP_Info.Logs >= 501 then

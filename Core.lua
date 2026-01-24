@@ -53,6 +53,47 @@ CEPGP_Info = {
 	VersionNotified = 			false,
 	LastUpdate = 				GetTime(),
 	TrafficScope = 				1,
+	DisableMessageQueue =		false,
+	DisableTrafficLogging =		false,
+	DisableRosterPolling =		false,
+	DisableGuildRosterPolling =	false,
+	DisableGroupRosterPolling =	false,
+	DisableRosterVersionList =	false,
+	DisableRosterAltAutoLink =	false,
+	DisableRosterUIUpdates =	false,
+	DisableRosterStandbyUpdate = false,
+	DisableRosterTrafficChecks = false,
+	DisableGuildRosterEPGP =	false,
+	DisableGuildRosterPopulate = false,
+	DisableGuildRosterAmbiguate = false, 
+	DisableGuildRosterTempRoster = false,
+	DisableGuildRosterRosterWrite = false,
+	DisableGuildRosterPRCalc = false,
+	DisableGuildRosterInfoCalls = false,
+	DisableGuildRosterStaleMap = false,
+	DisableGuildRosterFinalize = false,
+	DisableGuildRosterRescan = false,
+	DisableGuildRosterCallGroup = false, -- here
+	DisableRosterStackCallbacks = false,
+	DisableRosterQueuedAnnouncement = false,
+	DisableGroupRosterInfoCalls = false, --
+	DisableGroupRosterPopulate = false, -- 
+	DisableGroupRosterStandby = false, --
+	DisableGroupRosterRosterWrite = false, --
+	DisableGroupRosterRankLookup = false, --
+	DisableGroupRosterEPGP = false, --
+	DisableLootUIUpdates =		false,
+	DisableLootItemQueries =	false,
+	DisableVersionUIUpdates =	false,
+	DisableStandbyUIUpdates =	false,
+	DisableTrafficUIUpdates =	false,
+	DisableGuildUIUpdates =		false,
+	DisableRaidUIUpdates =		false,
+	DisableAllUIUpdates =		false,
+	DisableEventRegistration =	false,
+	DisableEventHandling =		false,
+	DisableAllTimers =			false,
+	DisableRosterWhenUIHidden = true,
 	
 	Attendance =				{
 		SelectedSnapshot =		nil,
@@ -222,6 +263,9 @@ local LDBIcon = LDB and LibStub("LibDBIcon-1.0", true)
 
 --[[ EVENT AND COMMAND HANDLER ]]--
 function CEPGP_OnEvent(event, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17)
+	if CEPGP_Info.DisableEventHandling then
+		return;
+	end
 	
 	local function isLootKeyword()
 		for i = 1, 4 do
@@ -361,28 +405,558 @@ function CEPGP_OnEvent(event, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, ar
 	
 end
 
-function SlashCmdList.CEPGP(msg, editbox)
-	msg = string.lower(msg);
+local function CEPGP_countTableKeys(t)
+	if type(t) ~= "table" then
+		return 0;
+	end
+	local n = 0;
+	for _ in pairs(t) do
+		n = n + 1;
+	end
+	return n;
+end
+
+local function CEPGP_countFrames()
+	local n = 0;
+	local f = EnumerateFrames();
+	while f do
+		n = n + 1;
+		f = EnumerateFrames(f);
+	end
+	return n;
+end
+
+local function CEPGP_printMemory(mode)
+	collectgarbage("collect");
+	UpdateAddOnMemoryUsage();
+	local addonMB = GetAddOnMemoryUsage("CEPGP") / 1024;
+	local luaKB = collectgarbage("count");
+	local luaMB = luaKB / 1024;
+	CEPGP_print(string.format("Memory: CEPGP %.2f MB, Lua %.2f MB (%.0f KB)", addonMB, luaMB, luaKB));
+	if mode == "frames" or mode == "verbose" then
+		CEPGP_print("Frames: " .. CEPGP_countFrames());
+	end
+	if mode == "tables" or mode == "verbose" then
+		if CEPGP then
+			CEPGP_print("CEPGP root: " .. CEPGP_countTableKeys(CEPGP));
+			for k, v in pairs(CEPGP) do
+				if type(v) == "table" then
+					CEPGP_print("CEPGP." .. k .. ": " .. CEPGP_countTableKeys(v));
+				end
+			end
+		end
+		if CEPGP_Info then
+			CEPGP_print("Info root: " .. CEPGP_countTableKeys(CEPGP_Info));
+			for k, v in pairs(CEPGP_Info) do
+				if type(v) == "table" then
+					CEPGP_print("Info." .. k .. ": " .. CEPGP_countTableKeys(v));
+				end
+			end
+		end
+	end
+end
+
+local CEPGP_TimerStats = {
+	after = 0,
+	ticker = 0,
+	activeTickers = 0,
+	lastAfter = {},
+	lastTicker = {},
+	afterSites = {},
+	tickerSites = {},
+	wrapped = false
+};
+
+local function CEPGP_pushTimerLog(list, entry)
+	if not entry or entry == "" then return; end
+	list[#list + 1] = entry;
+	if #list > 10 then
+		table.remove(list, 1);
+	end
+end
+
+local function CEPGP_wrapTimers()
+	if CEPGP_TimerStats.wrapped or not C_Timer then return; end
+	CEPGP_TimerStats.wrapped = true;
+	CEPGP_TimerStats._origAfter = C_Timer.After;
+	CEPGP_TimerStats._origNewTicker = C_Timer.NewTicker;
 	
-	if msg == "" then
+	C_Timer.After = function(delay, func)
+		local stack = debugstack(2, 5, 5);
+		if stack and string.find(stack, "CEPGP") then
+			CEPGP_TimerStats.after = CEPGP_TimerStats.after + 1;
+			CEPGP_pushTimerLog(CEPGP_TimerStats.lastAfter, stack);
+			local site = string.match(stack, "([^\r\n]+)");
+			if site then
+				CEPGP_TimerStats.afterSites[site] = (CEPGP_TimerStats.afterSites[site] or 0) + 1;
+			end
+		end
+		return CEPGP_TimerStats._origAfter(delay, func);
+	end
+	
+	C_Timer.NewTicker = function(interval, func, iterations)
+		local stack = debugstack(2, 5, 5);
+		local track = stack and string.find(stack, "CEPGP");
+		local remaining = iterations;
+		local ticker;
+		local wrapped = func;
+		if type(iterations) == "number" then
+			wrapped = function(...)
+				if remaining then
+					remaining = remaining - 1;
+					if remaining <= 0 and ticker and not ticker.__CEPGP_cancelled then
+						ticker.__CEPGP_cancelled = true;
+						CEPGP_TimerStats.activeTickers = math.max(0, CEPGP_TimerStats.activeTickers - 1);
+					end
+				end
+				return func(...);
+			end
+		end
+		ticker = CEPGP_TimerStats._origNewTicker(interval, wrapped, iterations);
+		if track then
+			CEPGP_TimerStats.ticker = CEPGP_TimerStats.ticker + 1;
+			CEPGP_TimerStats.activeTickers = CEPGP_TimerStats.activeTickers + 1;
+			CEPGP_pushTimerLog(CEPGP_TimerStats.lastTicker, stack);
+			local site = string.match(stack, "([^\r\n]+)");
+			if site then
+				CEPGP_TimerStats.tickerSites[site] = (CEPGP_TimerStats.tickerSites[site] or 0) + 1;
+			end
+			-- Some client builds expose ticker.Cancel as read-only; avoid patching it.
+		end
+		return ticker;
+	end
+end
+
+local function CEPGP_printTimerStats(verbose)
+	CEPGP_wrapTimers();
+	CEPGP_print(string.format("Timers: After=%d, Tickers=%d, ActiveTickers=%d", CEPGP_TimerStats.after, CEPGP_TimerStats.ticker, CEPGP_TimerStats.activeTickers));
+	if verbose then
+		CEPGP_print("Recent After call sites:");
+		for i = 1, #CEPGP_TimerStats.lastAfter do
+			CEPGP_print(CEPGP_TimerStats.lastAfter[i]);
+		end
+		CEPGP_print("Recent NewTicker call sites:");
+		for i = 1, #CEPGP_TimerStats.lastTicker do
+			CEPGP_print(CEPGP_TimerStats.lastTicker[i]);
+		end
+	end
+end
+
+local function CEPGP_printTimerSites(siteTable, title, topN)
+	local list = {};
+	for k, v in pairs(siteTable) do
+		list[#list + 1] = {k, v};
+	end
+	table.sort(list, function(a, b) return a[2] > b[2]; end);
+	CEPGP_print(title .. ":");
+	for i = 1, math.min(#list, topN) do
+		CEPGP_print(string.format("%d) %d - %s", i, list[i][2], list[i][1]));
+	end
+end
+
+local function CEPGP_memDeepScan(rootName, root, maxNodes, maxDepth, topN)
+	local seen = {};
+	local stack = {};
+	local scanned = 0;
+	local tables = 0;
+	local strings = 0;
+	local stringBytes = 0;
+	local largest = {};
+	local cut = false;
+	local timeStart = GetTime();
+	local timeLimit = 0.35;
+
+	if type(root) ~= "table" then
+		return {
+			scanned = 0,
+			tables = 0,
+			strings = 0,
+			stringBytes = 0,
+			largest = {},
+			cut = false
+		};
+	end
+	
+	stack[#stack + 1] = {root, rootName, 0};
+	
+	while #stack > 0 do
+		local node = stack[#stack];
+		stack[#stack] = nil;
+		local t, path, depth = node[1], node[2], node[3];
+		if not seen[t] then
+			seen[t] = true;
+			tables = tables + 1;
+			for k, v in pairs(t) do
+				scanned = scanned + 1;
+				if scanned >= maxNodes or GetTime() - timeStart > timeLimit then
+					cut = true;
+					stack = {};
+					break;
+				end
+				local kPath;
+				if type(k) == "string" then
+					kPath = path .. "." .. k;
+				else
+					kPath = path .. "[" .. tostring(k) .. "]";
+				end
+				local vType = type(v);
+				if vType == "string" then
+					local len = string.len(v);
+					strings = strings + 1;
+					stringBytes = stringBytes + len;
+					if #largest < topN then
+						largest[#largest + 1] = {len, kPath, v};
+					elseif len > largest[1][1] then
+						largest[1] = {len, kPath, v};
+					end
+					if #largest > 1 then
+						table.sort(largest, function(a, b) return a[1] < b[1]; end);
+					end
+				elseif vType == "table" and depth < maxDepth then
+					stack[#stack + 1] = {v, kPath, depth + 1};
+				end
+			end
+		end
+	end
+	
+	return {
+		scanned = scanned,
+		tables = tables,
+		strings = strings,
+		stringBytes = stringBytes,
+		largest = largest,
+		cut = cut
+	};
+end
+
+local function CEPGP_printDeepMemory(maxNodes, maxDepth, topN)
+	CEPGP_print(string.format("Deep scan (nodes=%d depth=%d top=%d)", maxNodes, maxDepth, topN));
+	local info = CEPGP_memDeepScan("CEPGP", CEPGP, maxNodes, maxDepth, topN);
+	local info2 = CEPGP_memDeepScan("CEPGP_Info", CEPGP_Info, maxNodes, maxDepth, topN);
+	local totalStrings = info.strings + info2.strings;
+	local totalBytes = info.stringBytes + info2.stringBytes;
+	local totalTables = info.tables + info2.tables;
+	local totalScanned = info.scanned + info2.scanned;
+	CEPGP_print(string.format("Scanned %d nodes, %d tables, %d strings, %.2f KB strings", totalScanned, totalTables, totalStrings, totalBytes / 1024));
+	if info.cut or info2.cut then
+		CEPGP_print("Scan cut short (limits reached). Increase limits if needed.");
+	end
+	local combined = {};
+	for _, v in ipairs(info.largest) do combined[#combined + 1] = v; end
+	for _, v in ipairs(info2.largest) do combined[#combined + 1] = v; end
+	if #combined > 1 then
+		table.sort(combined, function(a, b) return a[1] > b[1]; end);
+	end
+	CEPGP_print("Largest strings:");
+	for i = 1, math.min(#combined, topN) do
+		local entry = combined[i];
+		local size = entry[1];
+		local path = entry[2];
+		local sample = entry[3];
+		if string.len(sample) > 120 then
+			sample = string.sub(sample, 1, 120) .. "...";
+		end
+		CEPGP_print(string.format("%d) %d bytes @ %s : %s", i, size, path, sample));
+	end
+end
+
+local function CEPGP_memTableSizeScan(rootName, root, maxNodes, maxDepth, topN)
+	local seen = {};
+	local stack = {};
+	local scanned = 0;
+	local cut = false;
+	local timeStart = GetTime();
+	local timeLimit = 0.35;
+	local tables = {};
+	local totals = {
+		tables = 0,
+		strings = 0,
+		stringBytes = 0,
+		numbers = 0,
+		booleans = 0,
+		userdata = 0,
+		functions = 0,
+		threads = 0
+	};
+
+	if type(root) ~= "table" then
+		return {tables = {}, totals = totals, scanned = 0, cut = false};
+	end
+
+	stack[#stack + 1] = {root, rootName, 0};
+
+	while #stack > 0 do
+		local node = stack[#stack];
+		stack[#stack] = nil;
+		local t, path, depth = node[1], node[2], node[3];
+		if not seen[t] then
+			seen[t] = true;
+			totals.tables = totals.tables + 1;
+			local entryCount = 0;
+			local strBytes = 0;
+			local strCount = 0;
+			local numCount = 0;
+			local boolCount = 0;
+			local userCount = 0;
+			local funcCount = 0;
+			local threadCount = 0;
+			local subCount = 0;
+			for k, v in pairs(t) do
+				scanned = scanned + 1;
+				entryCount = entryCount + 1;
+				if scanned >= maxNodes or GetTime() - timeStart > timeLimit then
+					cut = true;
+					stack = {};
+					break;
+				end
+				local vType = type(v);
+				if vType == "string" then
+					local len = string.len(v);
+					strBytes = strBytes + len;
+					strCount = strCount + 1;
+					totals.strings = totals.strings + 1;
+					totals.stringBytes = totals.stringBytes + len;
+				elseif vType == "number" then
+					numCount = numCount + 1;
+					totals.numbers = totals.numbers + 1;
+				elseif vType == "boolean" then
+					boolCount = boolCount + 1;
+					totals.booleans = totals.booleans + 1;
+				elseif vType == "userdata" then
+					userCount = userCount + 1;
+					totals.userdata = totals.userdata + 1;
+				elseif vType == "function" then
+					funcCount = funcCount + 1;
+					totals.functions = totals.functions + 1;
+				elseif vType == "thread" then
+					threadCount = threadCount + 1;
+					totals.threads = totals.threads + 1;
+				elseif vType == "table" then
+					subCount = subCount + 1;
+					local kPath;
+					if type(k) == "string" then
+						kPath = path .. "." .. k;
+					else
+						kPath = path .. "[" .. tostring(k) .. "]";
+					end
+					if depth < maxDepth then
+						stack[#stack + 1] = {v, kPath, depth + 1};
+					end
+				end
+			end
+			tables[#tables + 1] = {
+				path = path,
+				entries = entryCount,
+				strBytes = strBytes,
+				strCount = strCount,
+				numCount = numCount,
+				boolCount = boolCount,
+				userCount = userCount,
+				funcCount = funcCount,
+				threadCount = threadCount,
+				subCount = subCount
+			};
+		end
+	end
+
+	return {tables = tables, totals = totals, scanned = scanned, cut = cut};
+end
+
+local function CEPGP_printTableSizeScan(maxNodes, maxDepth, topN, sortBy)
+	local info = CEPGP_memTableSizeScan("CEPGP", CEPGP, maxNodes, maxDepth, topN);
+	local info2 = CEPGP_memTableSizeScan("CEPGP_Info", CEPGP_Info, maxNodes, maxDepth, topN);
+	local combined = {};
+	for _, v in ipairs(info.tables) do combined[#combined + 1] = v; end
+	for _, v in ipairs(info2.tables) do combined[#combined + 1] = v; end
+
+	local key = "entries";
+	if sortBy == "strings" then
+		key = "strBytes";
+	elseif sortBy == "subs" then
+		key = "subCount";
+	end
+	table.sort(combined, function(a, b) return (a[key] or 0) > (b[key] or 0); end);
+
+	local totals = {
+		tables = info.totals.tables + info2.totals.tables,
+		strings = info.totals.strings + info2.totals.strings,
+		stringBytes = info.totals.stringBytes + info2.totals.stringBytes,
+		numbers = info.totals.numbers + info2.totals.numbers,
+		booleans = info.totals.booleans + info2.totals.booleans,
+		userdata = info.totals.userdata + info2.totals.userdata,
+		functions = info.totals.functions + info2.totals.functions,
+		threads = info.totals.threads + info2.totals.threads
+	};
+	local scanned = info.scanned + info2.scanned;
+	CEPGP_print(string.format("Table scan (nodes=%d depth=%d sort=%s)", maxNodes, maxDepth, sortBy));
+	CEPGP_print(string.format("Scanned %d nodes, %d tables", scanned, totals.tables));
+	CEPGP_print(string.format("Totals: strings=%d (%.2f KB), numbers=%d, booleans=%d, userdata=%d, functions=%d, threads=%d",
+		totals.strings, totals.stringBytes / 1024, totals.numbers, totals.booleans, totals.userdata, totals.functions, totals.threads));
+	if info.cut or info2.cut then
+		CEPGP_print("Scan cut short (limits reached). Increase limits if needed.");
+	end
+	CEPGP_print("Top tables:");
+	for i = 1, math.min(#combined, topN) do
+		local t = combined[i];
+		CEPGP_print(string.format(
+			"%d) %s entries=%d strings=%d (%.2f KB) nums=%d subs=%d",
+			i, t.path, t.entries, t.strCount, t.strBytes / 1024, t.numCount, t.subCount
+		));
+	end
+end
+
+local function CEPGP_getLib(libName)
+	if not LibStub or not libName then return nil; end
+	local ok, lib = pcall(function()
+		return LibStub:GetLibrary(libName, true);
+	end);
+	if ok then return lib; end
+	return nil;
+end
+
+local function CEPGP_printLibScan(maxNodes, maxDepth)
+	local libs = {
+		"AceAddon-3.0",
+		"AceLocale-3.0",
+		"CallbackHandler-1.0",
+		"LibDataBroker-1.1",
+		"LibDBIcon-1.0",
+		"LibUIDropDownMenu-4.0",
+		"LibUIDropDownMenu-3.0"
+	};
+	CEPGP_print(string.format("Lib scan (nodes=%d depth=%d)", maxNodes, maxDepth));
+	if LibStub then
+		local info = CEPGP_memTableSizeScan("LibStub", LibStub, maxNodes, math.min(maxDepth, 6), 0);
+		CEPGP_print(string.format("LibStub: tables=%d strings=%d (%.2f KB) nums=%d user=%d func=%d",
+			info.totals.tables, info.totals.strings, info.totals.stringBytes / 1024, info.totals.numbers, info.totals.userdata, info.totals.functions));
+	end
+	for _, name in ipairs(libs) do
+		local lib = CEPGP_getLib(name);
+		if lib then
+			local info = CEPGP_memTableSizeScan(name, lib, maxNodes, maxDepth, 0);
+			CEPGP_print(string.format("%s: tables=%d strings=%d (%.2f KB) nums=%d user=%d func=%d%s",
+				name, info.totals.tables, info.totals.strings, info.totals.stringBytes / 1024, info.totals.numbers, info.totals.userdata, info.totals.functions,
+				(info.cut and " [cut]" or "")));
+		end
+	end
+end
+
+local function CEPGP_printLibStubDetail(maxNodes, maxDepth, topN, sortBy)
+	if not LibStub then
+		CEPGP_print("LibStub not available");
+		return;
+	end
+	local info = CEPGP_memTableSizeScan("LibStub", LibStub, maxNodes, maxDepth, 0);
+	local combined = info.tables or {};
+	local key = "entries";
+	if sortBy == "strings" then
+		key = "strBytes";
+	elseif sortBy == "subs" then
+		key = "subCount";
+	end
+	table.sort(combined, function(a, b) return (a[key] or 0) > (b[key] or 0); end);
+	CEPGP_print(string.format("LibStub detail (nodes=%d depth=%d sort=%s)", maxNodes, maxDepth, sortBy));
+	CEPGP_print(string.format("LibStub totals: tables=%d strings=%d (%.2f KB) nums=%d user=%d func=%d",
+		info.totals.tables, info.totals.strings, info.totals.stringBytes / 1024, info.totals.numbers, info.totals.userdata, info.totals.functions));
+	if info.cut then
+		CEPGP_print("Scan cut short (limits reached). Increase limits if needed.");
+	end
+	CEPGP_print("Top LibStub tables:");
+	for i = 1, math.min(#combined, topN) do
+		local t = combined[i];
+		CEPGP_print(string.format(
+			"%d) %s entries=%d strings=%d (%.2f KB) nums=%d subs=%d",
+			i, t.path, t.entries, t.strCount, t.strBytes / 1024, t.numCount, t.subCount
+		));
+	end
+end
+
+local function CEPGP_printAddonMemory(topN)
+	UpdateAddOnMemoryUsage();
+	local list = {};
+	for i = 1, GetNumAddOns() do
+		local name = GetAddOnInfo(i);
+		if name and IsAddOnLoaded(name) then
+			local kb = GetAddOnMemoryUsage(name);
+			list[#list + 1] = {name, kb};
+		end
+	end
+	table.sort(list, function(a, b) return a[2] > b[2]; end);
+	CEPGP_print("Top addon memory (KB):");
+	for i = 1, math.min(#list, topN) do
+		CEPGP_print(string.format("%d) %s: %.0f KB", i, list[i][1], list[i][2]));
+	end
+end
+
+local function CEPGP_scanUI(scope, maxFrames)
+	local countFrames = 0;
+	local countTextures = 0;
+	local countFontStrings = 0;
+	local textBytes = 0;
+	local scanned = 0;
+	local f = EnumerateFrames();
+	while f do
+		scanned = scanned + 1;
+		if maxFrames and scanned > maxFrames then
+			break;
+		end
+		local name = f.GetName and f:GetName() or nil;
+		local match = false;
+		if scope == "all" then
+			match = true;
+		elseif name and string.sub(name, 1, 6) == "CEPGP_" then
+			match = true;
+		end
+		if match then
+			countFrames = countFrames + 1;
+			local regions = {f:GetRegions()};
+			for i = 1, #regions do
+				local r = regions[i];
+				local rType = r and r.GetObjectType and r:GetObjectType() or nil;
+				if rType == "Texture" then
+					countTextures = countTextures + 1;
+				elseif rType == "FontString" then
+					countFontStrings = countFontStrings + 1;
+					local text = r:GetText();
+					if text then
+						textBytes = textBytes + string.len(text);
+					end
+				end
+			end
+		end
+		f = EnumerateFrames(f);
+	end
+	CEPGP_print(string.format("UI scan (%s): frames=%d textures=%d fontstrings=%d text=%.2f KB scanned=%d%s",
+		scope, countFrames, countTextures, countFontStrings, textBytes / 1024, scanned, (maxFrames and " (capped)" or "")));
+end
+
+function SlashCmdList.CEPGP(msg, editbox)
+	msg = string.lower(msg or "");
+	local args = {};
+	for w in string.gmatch(msg, "%S+") do
+		args[#args + 1] = w;
+	end
+	local cmd = args[1] or "";
+	
+	if cmd == "" then
 		CEPGP_print("Classic EPGP Usage");
 		CEPGP_print("|cFF80FF80show|r - |cFFFF8080Manually shows the CEPGP window|r");
 		CEPGP_print("|cFF80FF80version|r - |cFFFF8080Checks the version of the addon everyone in your raid is running|r");
 		CEPGP_print("|cFF80FF80options or config|r - |cFFFF8080Opens the configuration menu for CEPGP|r");
 	
-	elseif msg == "show" or msg == "open" then
+	elseif cmd == "show" or cmd == "open" then
 		CEPGP_populateFrame();
 		ShowUIPanel(CEPGP_frame);
 		CEPGP_toggleFrame("");
 	
-	elseif msg == "options" or msg == "opt" or msg == "config" or msg == "conf" then
+	elseif cmd == "options" or cmd == "opt" or cmd == "config" or cmd == "conf" then
 		InterfaceOptionsFrame_Show();
 		InterfaceOptionsFrame_OpenToCategory("Classic EPGP");
 		
-	elseif msg == "traffic" then
+	elseif cmd == "traffic" then
 		ShowUIPanel(CEPGP_traffic);
 	
-	elseif msg == "version" or msg == "ver" then
+	elseif cmd == "version" or cmd == "ver" then
 		CEPGP_Info.Version.List = {};
 		CEPGP_Info.Version.ListSearch = "GUILD";
 		for i = 1, GetNumGuildMembers() do
@@ -408,7 +982,7 @@ function SlashCmdList.CEPGP(msg, editbox)
 			CEPGP_UpdateVersionScrollBar();
 		end
 		
-	elseif msg == "debugmode" then
+	elseif cmd == "debugmode" then
 		CEPGP_Info.Debug = not CEPGP_Info.Debug;
 		if CEPGP_Info.Debug then
 			CEPGP_print("Debug Mode Enabled");
@@ -416,8 +990,78 @@ function SlashCmdList.CEPGP(msg, editbox)
 			CEPGP_print("Debug Mode Disabled");
 		end
 	
-	elseif msg == "log" then
+	elseif cmd == "log" then
 		CEPGP_log:Show();
+		
+	elseif cmd == "mem" or cmd == "memory" then
+		local mode = args[2] or "";
+		if mode == "" then
+			CEPGP_printMemory("basic");
+		elseif mode == "frames" or mode == "tables" or mode == "verbose" then
+			CEPGP_printMemory(mode);
+		elseif mode == "deep" then
+			local maxNodes = tonumber(args[3]) or 5000;
+			local maxDepth = tonumber(args[4]) or 8;
+			local topN = tonumber(args[5]) or 10;
+			CEPGP_printMemory("basic");
+			CEPGP_printDeepMemory(maxNodes, maxDepth, topN);
+		elseif mode == "tablesize" or mode == "tsize" then
+			local maxNodes = tonumber(args[3]) or 20000;
+			local maxDepth = tonumber(args[4]) or 12;
+			local topN = tonumber(args[5]) or 15;
+			local sortBy = args[6] or "entries"; -- entries|strings|subs
+			CEPGP_printMemory("basic");
+			CEPGP_printTableSizeScan(maxNodes, maxDepth, topN, sortBy);
+		elseif mode == "libs" then
+			local maxNodes = tonumber(args[3]) or 20000;
+			local maxDepth = tonumber(args[4]) or 12;
+			CEPGP_printMemory("basic");
+			CEPGP_printLibScan(maxNodes, maxDepth);
+		elseif mode == "libstub" then
+			local maxNodes = tonumber(args[3]) or 50000;
+			local maxDepth = tonumber(args[4]) or 20;
+			local topN = tonumber(args[5]) or 20;
+			local sortBy = args[6] or "entries";
+			CEPGP_printMemory("basic");
+			CEPGP_printLibStubDetail(maxNodes, maxDepth, topN, sortBy);
+		elseif mode == "addons" then
+			local topN = tonumber(args[3]) or 15;
+			CEPGP_printMemory("basic");
+			CEPGP_printAddonMemory(topN);
+		elseif mode == "ui" then
+			local scope = args[3] or "cepgp";
+			local maxFrames = tonumber(args[4]);
+			if scope ~= "cepgp" and scope ~= "all" then
+				CEPGP_print("Usage: /CEPGP mem ui [cepgp|all] [maxFrames]");
+			else
+				CEPGP_printMemory("basic");
+				CEPGP_scanUI(scope, maxFrames);
+			end
+		elseif mode == "timers" then
+			local sub = args[3] or "";
+			if sub == "reset" then
+				CEPGP_TimerStats.after = 0;
+				CEPGP_TimerStats.ticker = 0;
+				CEPGP_TimerStats.activeTickers = 0;
+				CEPGP_TimerStats.lastAfter = {};
+				CEPGP_TimerStats.lastTicker = {};
+				CEPGP_TimerStats.afterSites = {};
+				CEPGP_TimerStats.tickerSites = {};
+				CEPGP_print("Timer stats reset");
+			elseif sub == "report" then
+				local topN = tonumber(args[4]) or 5;
+				CEPGP_printTimerStats(false);
+				CEPGP_printTimerSites(CEPGP_TimerStats.afterSites, "Top After sites", topN);
+				CEPGP_printTimerSites(CEPGP_TimerStats.tickerSites, "Top Ticker sites", topN);
+			else
+				CEPGP_printTimerStats(sub == "verbose");
+			end
+		else
+			CEPGP_print("Usage: /CEPGP mem [frames||tables||verbose||deep||tablesize||libs||libstub||addons||ui||timers] [maxNodes] [maxDepth] [topN] [sort]");
+			CEPGP_print("Sort options for tablesize: entries||strings||subs");
+			CEPGP_print("Timers: /CEPGP mem timers [verbose|reset|report] [topN]");
+			CEPGP_print("UI: /CEPGP mem ui [cepgp|all] [maxFrames]");
+		end
 		
 	else
 		CEPGP_print("|cFF80FF80" .. msg .. "|r |cFFFF8080is not a valid request. Type /CEPGP to check addon usage|r", true);
@@ -1286,7 +1930,7 @@ function CEPGP_resetAll(msg)
 		local i = 0;
 		
 		C_Timer.After(0.1, function()
-			C_Timer.NewTicker(0.0001, function()
+			C_Timer.NewTicker(1/30, function()
 				i = i + 1;
 				local name = Ambiguate(GetGuildRosterInfo(i), "all");
 				local rankIndex = select(3, GetGuildRosterInfo(i));
