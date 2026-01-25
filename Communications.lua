@@ -1411,6 +1411,7 @@ function CEPGP_initMessageQueue()
 	local blockedUntil = 0; -- When we can resume sending after throttling
 	local errorIndex;
 	local processQueue;
+	local newTicker = (CEPGP_TimerGate and CEPGP_TimerGate.origNewTicker) or C_Timer.NewTicker;
 	processQueue = function()
 		local now = GetTime();
 		if now < blockedUntil then
@@ -1462,13 +1463,21 @@ function CEPGP_initMessageQueue()
 	if CEPGP_Info.MessageTicker and CEPGP_Info.MessageTicker.Cancel then
 		CEPGP_Info.MessageTicker:Cancel();
 	end
-	CEPGP_Info.MessageTicker = C_Timer.NewTicker(0.25, processQueue);
+	CEPGP_Info.MessageTicker = newTicker(0.25, processQueue);
 	
 end
 
 function CEPGP_addAddonMsg(message, channel, player)
 	if CEPGP_Info.DisableMessageQueue then
+		CEPGP_SendAddonMsg({message, channel, player});
+		table.insert(CEPGP_Info.Logs, {time(), "sent", UnitName("player"), player, message, channel});
+		if #CEPGP_Info.Logs >= 501 then
+			table.remove(CEPGP_Info.Logs, 1);
+		end
 		return;
+	end
+	if not CEPGP_Info.MessageTicker then
+		CEPGP_initMessageQueue();
 	end
 	table.insert(CEPGP_Info.MessageStack, {message, channel, player, 0, false});
 	table.insert(CEPGP_Info.Logs, {time(), "queued", UnitName("player"), player, message, channel});
