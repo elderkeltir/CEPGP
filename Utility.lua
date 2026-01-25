@@ -1199,7 +1199,8 @@ function CEPGP_rosterUpdate(event)
 				end
 			end
 			
-			if CEPGP.Alt.Auto and not CEPGP_Info.DisableRosterAltAutoLink then
+			local preserve = CEPGP_Info.Import and CEPGP_Info.Import.PreserveAltLinks and next(CEPGP.Alt.Links);
+			if CEPGP.Alt.Auto and not CEPGP_Info.DisableRosterAltAutoLink and not CEPGP_Info.Import.Running and not CEPGP_Info.Import.SuppressAltAutoLink and not preserve then
 				CEPGP.Alt.Links = {};
 				for k, v in pairs(CEPGP_Info.Guild.Roster) do
 					if CEPGP_Info.Guild.Roster[v[11]] then
