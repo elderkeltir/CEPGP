@@ -29,6 +29,30 @@ function CEPGP_IncAddonMsg(message, channel, sender)
 	if args[1] == "table" then
 		return;
 	end
+
+	local function ensureImportWatchdog()
+		if not CEPGP_Info.Import then return; end
+		if CEPGP_Info.Import.Ticker and CEPGP_Info.Import.Ticker.Cancel then return; end
+		local newTicker = (CEPGP_TimerGate and CEPGP_TimerGate.origNewTicker) or C_Timer.NewTicker;
+		CEPGP_Info.Import.Ticker = newTicker(1, function()
+			if not CEPGP_Info.Import.Running then return; end
+			local last = CEPGP_Info.Import.LastUpdate or 0;
+			if last > 0 and (GetTime() - last) > 20 then
+				CEPGP_Info.Import.Running = false;
+				CEPGP_Info.Import.Source = "";
+				CEPGP_Info.Import.LastUpdate = nil;
+				if CEPGP_settings_import_confirm then CEPGP_settings_import_confirm:Enable(); end
+				if CEPGP_settings_import_verbose_check then CEPGP_settings_import_verbose_check:Enable(); end
+				if CEPGP_interface_options_force_sync_button then CEPGP_interface_options_force_sync_button:Enable(); end
+				local i = 1;
+				while _G["ImportCheckButton_" .. i] do
+					_G["ImportCheckButton_" .. i]:Enable();
+					i = i + 1;
+				end
+				CEPGP_print("Import timed out; please try again.");
+			end
+		end);
+	end
 	
 	if args[1] == "Import" then
 		local option = args[2];
@@ -40,15 +64,30 @@ function CEPGP_IncAddonMsg(message, channel, sender)
 	end
 	
 	if args[1] == "ImportStart" then
+		ensureImportWatchdog();
+		local now = GetTime();
+		if CEPGP_Info.Import.Running then
+			local stale = CEPGP_Info.Import.LastUpdate and (now - CEPGP_Info.Import.LastUpdate) or 999;
+			if sender == CEPGP_Info.Import.Source or stale > 20 then
+				CEPGP_Info.Import.Running = false;
+				CEPGP_Info.Import.Source = "";
+			else
+				return;
+			end
+		end
 		CEPGP_settings_import_confirm:Disable();
 		if not CEPGP_Info.Import.Running and CEPGP_Info.Import.Source == "" then
 			CEPGP_Info.Import.Source = sender;
 		end
 		CEPGP_Info.Import.Running = true;
+		CEPGP_Info.Import.LastUpdate = now;
 		return;
 	end
 	
 	if args[1] == "ImportEnd" then
+		if CEPGP_Info.Import then
+			CEPGP_Info.Import.LastUpdate = GetTime();
+		end
 		CEPGP_ExportConfig(sender);
 		return;
 	end
@@ -68,6 +107,9 @@ function CEPGP_IncAddonMsg(message, channel, sender)
 			CEPGP_Info.Import.Source = sender;
 		end
 		CEPGP_Info.Import.Running = true;
+		if CEPGP_Info.Import then
+			CEPGP_Info.Import.LastUpdate = GetTime();
+		end
 		
 		CEPGP.Alt.Links = {};
 		if CEPGP_options_alt_mangement:IsVisible() then
@@ -95,6 +137,9 @@ function CEPGP_IncAddonMsg(message, channel, sender)
 			if not CEPGP.Sync[1] then return; end
 			local rank = CEPGP_Info.Guild.Roster[sender][4];
 			if not CEPGP.Sync[2][rank] then return; end
+		end
+		if CEPGP_Info.Import then
+			CEPGP_Info.Import.LastUpdate = GetTime();
 		end
 		CEPGP_OverwriteOption(args, sender, channel);
 		return;
@@ -1231,6 +1276,7 @@ function CEPGP_OverwriteOption(args, sender, channel)
 				CEPGP_interface_options_force_sync_button:Enable();
 				CEPGP_Info.Import.Running = false;
 				CEPGP_Info.Import.Source = "";
+				CEPGP_Info.Import.LastUpdate = nil;
 			else
 				if CEPGP_Info.Import.Verbose then
 					local map = {
@@ -1435,7 +1481,7 @@ function CEPGP_initMessageQueue()
 						period = tStamp;
 						length = 0;
 					end
-					if length + #message >= 750 and tStamp - lastSend < 1 then
+					if length + #message >= 2000 and tStamp - lastSend < 1 then
 						local delay = 1 - (tStamp - lastSend) + 0.25; -- 0.2 second margin added for safety
 						blockedUntil = tStamp + delay;
 						return;
@@ -1463,7 +1509,7 @@ function CEPGP_initMessageQueue()
 	if CEPGP_Info.MessageTicker and CEPGP_Info.MessageTicker.Cancel then
 		CEPGP_Info.MessageTicker:Cancel();
 	end
-	CEPGP_Info.MessageTicker = newTicker(0.25, processQueue);
+	CEPGP_Info.MessageTicker = newTicker(0.016, processQueue);
 	
 end
 
