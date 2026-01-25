@@ -1550,6 +1550,25 @@ end
 function CEPGP_SendAddonMsg(stackItem)
 	local status = "unsent";
 	local message, channel, player = stackItem[1], stackItem[2], stackItem[3];
+
+	local function markSent()
+		if channel == "WHISPER" then
+			return;
+		end
+		if not CEPGP_Info or not CEPGP_Info.MessageStack then
+			return;
+		end
+		for i = 1, #CEPGP_Info.MessageStack do
+			if CEPGP_Info.MessageStack[i][1] == message then
+				CEPGP_Info.MessageStack[i][5] = true;
+				table.insert(CEPGP_Info.Logs, {time(), "sent", UnitName("player"), player, message, channel});
+				if #CEPGP_Info.Logs >= 501 then
+					table.remove(CEPGP_Info.Logs, 1);
+				end
+				break;
+			end
+		end
+	end
 	
 	--print(message, channel, player);
 	local conditions = {
@@ -1605,16 +1624,19 @@ function CEPGP_SendAddonMsg(stackItem)
 		--Comm:SendCommMessage("CEPGP", message, "GUILD", nil, "ALERT", AddToLog, message);
 		CEPGP_CommDebug("send " .. tostring(channel) .. " " .. tostring(player) .. " " .. tostring(args[1]));
 		C_ChatInfo.SendAddonMessage("CEPGP", message, "GUILD");
+		markSent();
 		
 	elseif channel == "RAID" then
 		if not UnitInBattleground("player") then
 			--Comm:SendCommMessage("CEPGP", message, "RAID", nil, "ALERT", AddToLog, message);
 			CEPGP_CommDebug("send " .. tostring(channel) .. " " .. tostring(player) .. " " .. tostring(args[1]));
 			C_ChatInfo.SendAddonMessage("CEPGP", message, "RAID");
+			markSent();
 		else
 			--Comm:SendCommMessage("CEPGP", message, "INSTANCE_CHAT", nil, "ALERT", AddToLog, message);
 			CEPGP_CommDebug("send INSTANCE_CHAT " .. tostring(player) .. " " .. tostring(args[1]));
 			C_ChatInfo.SendAddonMessage("CEPGP", message, "INSTANCE_CHAT");
+			markSent();
 		end
 		
 	elseif channel == "WHISPER" then
@@ -1627,14 +1649,17 @@ function CEPGP_SendAddonMsg(stackItem)
 		--Comm:SendCommMessage("CEPGP", message, "PARTY", nil, "ALERT", AddToLog, message);
 		CEPGP_CommDebug("send PARTY " .. tostring(player) .. " " .. tostring(args[1]));
 		C_ChatInfo.SendAddonMessage("CEPGP", message, "PARTY");
+		markSent();
 	elseif (channel == "RAID" or not channel) and IsInRaid() then --Player is in a raid group
 		--Comm:SendCommMessage("CEPGP", message, "RAID", nil, "ALERT", AddToLog, message);
 		CEPGP_CommDebug("send RAID " .. tostring(player) .. " " .. tostring(args[1]));
 		C_ChatInfo.SendAddonMessage("CEPGP", message, "RAID");
+		markSent();
 	elseif IsInGuild() then --If channel is not specified then assume guild
 		--Comm:SendCommMessage("CEPGP", message, "GUILD", nil, "ALERT", AddToLog, message);
 		CEPGP_CommDebug("send GUILD " .. tostring(player) .. " " .. tostring(args[1]));
 		C_ChatInfo.SendAddonMessage("CEPGP", message, "GUILD");
+		markSent();
 	else	--None of the above conditions are met, such as not being in a guild and trying to request a version check. Ditch the message!
 		for i = 1, #CEPGP_Info.MessageStack do
 			if CEPGP_Info.MessageStack[i][1] == message then
