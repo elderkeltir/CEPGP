@@ -6,26 +6,7 @@ local function CEPGP_applyTimerGate()
 		origAfter = C_Timer.After,
 		origNewTicker = C_Timer.NewTicker
 	};
-	C_Timer.After = function(delay, func)
-		if CEPGP_Info and CEPGP_Info.DisableAllTimers then
-			local stack = debugstack(2, 1, 1);
-			if stack and string.find(stack, "CEPGP") then
-				return;
-			end
-		end
-		return CEPGP_TimerGate.origAfter(delay, func);
-	end
-	C_Timer.NewTicker = function(interval, func, iterations)
-		if CEPGP_Info and CEPGP_Info.DisableAllTimers then
-			local stack = debugstack(2, 1, 1);
-			if stack and string.find(stack, "CEPGP") then
-				local dummy = { _remainingIterations = 0 };
-				function dummy:Cancel() end
-				return dummy;
-			end
-		end
-		return CEPGP_TimerGate.origNewTicker(interval, func, iterations);
-	end
+	-- Do not override C_Timer.*; patching global timer APIs taints secure code.
 end
 
 function CEPGP_initialise()

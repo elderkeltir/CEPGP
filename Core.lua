@@ -477,54 +477,8 @@ end
 
 local function CEPGP_wrapTimers()
 	if CEPGP_TimerStats.wrapped or not C_Timer then return; end
+	-- Do not override C_Timer.*; patching global timer APIs taints secure code.
 	CEPGP_TimerStats.wrapped = true;
-	CEPGP_TimerStats._origAfter = C_Timer.After;
-	CEPGP_TimerStats._origNewTicker = C_Timer.NewTicker;
-	
-	C_Timer.After = function(delay, func)
-		local stack = debugstack(2, 5, 5);
-		if stack and string.find(stack, "CEPGP") then
-			CEPGP_TimerStats.after = CEPGP_TimerStats.after + 1;
-			CEPGP_pushTimerLog(CEPGP_TimerStats.lastAfter, stack);
-			local site = string.match(stack, "([^\r\n]+)");
-			if site then
-				CEPGP_TimerStats.afterSites[site] = (CEPGP_TimerStats.afterSites[site] or 0) + 1;
-			end
-		end
-		return CEPGP_TimerStats._origAfter(delay, func);
-	end
-	
-	C_Timer.NewTicker = function(interval, func, iterations)
-		local stack = debugstack(2, 5, 5);
-		local track = stack and string.find(stack, "CEPGP");
-		local remaining = iterations;
-		local ticker;
-		local wrapped = func;
-		if type(iterations) == "number" then
-			wrapped = function(...)
-				if remaining then
-					remaining = remaining - 1;
-					if remaining <= 0 and ticker and not ticker.__CEPGP_cancelled then
-						ticker.__CEPGP_cancelled = true;
-						CEPGP_TimerStats.activeTickers = math.max(0, CEPGP_TimerStats.activeTickers - 1);
-					end
-				end
-				return func(...);
-			end
-		end
-		ticker = CEPGP_TimerStats._origNewTicker(interval, wrapped, iterations);
-		if track then
-			CEPGP_TimerStats.ticker = CEPGP_TimerStats.ticker + 1;
-			CEPGP_TimerStats.activeTickers = CEPGP_TimerStats.activeTickers + 1;
-			CEPGP_pushTimerLog(CEPGP_TimerStats.lastTicker, stack);
-			local site = string.match(stack, "([^\r\n]+)");
-			if site then
-				CEPGP_TimerStats.tickerSites[site] = (CEPGP_TimerStats.tickerSites[site] or 0) + 1;
-			end
-			-- Some client builds expose ticker.Cancel as read-only; avoid patching it.
-		end
-		return ticker;
-	end
 end
 
 local function CEPGP_printTimerStats(verbose)
