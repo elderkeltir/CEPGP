@@ -249,7 +249,9 @@ function CEPGP_ListButton_OnClick(obj, button)
 				response = _G[obj]:GetAttribute("responseName");
 				response = CEPGP_indexToLabel(response);
 				reason = CEPGP.Loot.GUI.Buttons[attr] and CEPGP.Loot.GUI.Buttons[attr][2] or response;
-				discount = (CEPGP.Loot.ExtraKeywords.Keywords[attr] and CEPGP_getDiscount(attr)) or (CEPGP.Loot.GUI.Buttons[attr] and CEPGP.Loot.GUI.Buttons[attr][3]) or CEPGP_getDiscount(CEPGP_indexToLabel(attr));
+				discount = (CEPGP.Loot.ExtraKeywords.Keywords[attr] and CEPGP_getDiscount(attr))
+					or (CEPGP.Loot.GUI.Buttons[attr] and CEPGP.Loot.GUI.Buttons[attr][3])
+					or CEPGP_getDiscount(CEPGP_indexToLabel(attr));
 				CEPGP_distribute_popup:SetAttribute("responseName", reason);
 				CEPGP_distribute_popup:SetAttribute("response", attr);
 			else
@@ -257,6 +259,7 @@ function CEPGP_ListButton_OnClick(obj, button)
 				CEPGP_distribute_popup:SetAttribute("responseName", nil);
 				CEPGP_distribute_popup:SetAttribute("response", nil);
 			end
+			discount = tonumber(discount) or 0;
 			local gp = math.floor(CEPGP_distribute_GP_value:GetText());
 			local discGP = math.floor(gp*((100-discount)/100));
 			local player = _G[_G[obj]:GetName() .. "Info"]:GetText();

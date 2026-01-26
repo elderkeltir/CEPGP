@@ -1888,7 +1888,8 @@ function CEPGP_resetAll(msg)
 				i = i + 1;
 				local name = Ambiguate(GetGuildRosterInfo(i), "all");
 				local rankIndex = select(3, GetGuildRosterInfo(i));
-				if CEPGP_Info.Guild.Roster[name][9] then return; end
+				local rosterEntry = name and CEPGP_Info.Guild.Roster[name] or nil;
+				if rosterEntry and rosterEntry[9] then return; end
 				GuildRosterSetOfficerNote(i, "0,"..CEPGP.GP.Min);
 				if i == GetNumGuildMembers() then
 					update();
